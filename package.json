@@ -1,26 +1,33 @@
 {
-  "name": "deckofcards-be",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "open-cli http://localhost:3000 && node index.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/elijahmsmith/DeckOfCards-BE.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/elijahmsmith/DeckOfCards-BE/issues"
-  },
-  "homepage": "https://github.com/elijahmsmith/DeckOfCards-BE#readme",
-  "devDependencies": {
-    "open-cli": "^7.0.1"
-  },
-  "dependencies": {
-    "express": "^4.17.3"
-  }
+    "name": "deckofcards-be",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "nodemon index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/elijahmsmith/DeckOfCards-BE.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/elijahmsmith/DeckOfCards-BE/issues"
+    },
+    "homepage": "https://github.com/elijahmsmith/DeckOfCards-BE#readme",
+    "devDependencies": {
+        "dotenv": "^16.0.0",
+        "nodemon": "^2.0.15",
+        "open-cli": "^7.0.1"
+    },
+    "dependencies": {
+        "@hapi/joi": "^17.1.1",
+        "bcryptjs": "^2.4.3",
+        "cors": "^2.8.5",
+        "express": "^4.17.3",
+        "jsonwebtoken": "^8.5.1",
+        "mongoose": "^6.2.4"
+    }
 }
