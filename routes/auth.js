@@ -14,21 +14,28 @@ router.post('/register', async (req, res) => {
     if (emailExists)
         return res.status(400).json({ error: 'Email already exists' });
 
-    const password = bcrypt.hashSync(req.body.password, 10);
+    bcrypt
+        .hash(req.body.password, 10)
+        .then(async (hash) => {
+            const user = new User({
+                username: req.body.username,
+                email: req.body.email,
+                password: hash,
+                // replays an empty array by default
+            });
 
-    const user = new User({
-        username: req.body.username,
-        email: req.body.email,
-        password,
-        // replays an empty array by default
-    });
-
-    try {
-        const savedUser = await user.save();
-        res.status(200).json({ userId: savedUser._id });
-    } catch (error) {
-        res.status(400).json({ error });
-    }
+            try {
+                const savedUser = await user.save();
+                res.status(200).json({ userId: savedUser._id });
+            } catch (error) {
+                console.log(error);
+                res.status(400).json({ error });
+            }
+        })
+        .catch((error) => {
+            console.log(error);
+            res.status(400).json({ error });
+        });
 });
 
 module.exports = router;
