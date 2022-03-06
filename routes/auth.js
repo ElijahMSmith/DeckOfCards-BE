@@ -1,41 +1,35 @@
 const router = require('express').Router();
 const User = require('../models/User');
-const userSchema = require('../JOI_schemas/user.js');
-const bcrypt = require('bcryptjs');
 
 // Registration route
 router.post('/register', async (req, res) => {
-    // Validate the user
-    const { error } = userSchema.validate(req.body);
-    if (error) return res.status(400).json({ error: error.details[0].message });
+    try {
+        const user = new User(req.body);
+        await user.save();
+        const token = await user.generateAuthToken();
+        res.status(201).send({ user, token });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ error: error.message });
+    }
+});
 
-    // Check that email hasn't been used yet
-    const emailExists = await User.findOne({ email: req.body.email });
-    if (emailExists)
-        return res.status(400).json({ error: 'Email already exists' });
+// Login Route
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findByCredentials(email, password);
+        if (!user)
+            return res
+                .status(401)
+                .send({ error: 'Login failed with invalid credentials' });
 
-    bcrypt
-        .hash(req.body.password, 10)
-        .then(async (hash) => {
-            const user = new User({
-                username: req.body.username,
-                email: req.body.email,
-                password: hash,
-                // replays an empty array by default
-            });
-
-            try {
-                const savedUser = await user.save();
-                res.status(200).json({ userId: savedUser._id });
-            } catch (error) {
-                console.log(error);
-                res.status(400).json({ error });
-            }
-        })
-        .catch((error) => {
-            console.log(error);
-            res.status(400).json({ error });
-        });
+        const token = await user.generateAuthToken();
+        res.status(200).send({ user, token });
+    } catch (error) {
+        console.log(error);
+        res.status(400).send({ error: error.message });
+    }
 });
 
 module.exports = router;

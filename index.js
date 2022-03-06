@@ -8,6 +8,9 @@ const authRoutes = require('./routes/auth');
 app.use(express.json());
 app.use('/api/user', authRoutes);
 
+// Using JWT verification for login/signup
+// app.use("route/info/whatever", verifyToken, importedRoutes)
+
 // Connect to DB
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
