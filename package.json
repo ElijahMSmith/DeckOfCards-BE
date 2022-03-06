@@ -1,0 +1,26 @@
+{
+  "name": "deckofcards-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "open-cli http://localhost:3000 && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elijahmsmith/DeckOfCards-BE.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elijahmsmith/DeckOfCards-BE/issues"
+  },
+  "homepage": "https://github.com/elijahmsmith/DeckOfCards-BE#readme",
+  "devDependencies": {
+    "open-cli": "^7.0.1"
+  },
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
