@@ -1,21 +1,26 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-// Validate the submitted token
-const verifyToken = (req, res, next) => {
-    const token = req.header('auth-token');
-    if (!token)
-        return res
-            .status(401)
-            .json({ error: 'No authentication token provided' });
-
+const auth = async (req, res, next) => {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const data = jwt.verify(token, process.env.JWT_KEY);
     try {
-        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
-        req.user = verified;
+        const user = await User.findOne({
+            _id: data._id,
+            'tokens.token': token,
+        });
+        if (!user) {
+            throw new Error();
+        }
+        req.user = user;
+        req.token = token;
         next();
     } catch (error) {
-        console.log(error);
-        res.status(400).json({ error: 'Token is not valid' });
+        res.status(401).send({
+            error: 'Not authorized to access this resource',
+        });
     }
 };
+module.exports = auth;
 
 module.exports = verifyToken;
