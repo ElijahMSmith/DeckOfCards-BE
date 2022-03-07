@@ -32,4 +32,22 @@ router.post('/login', async (req, res) => {
     }
 });
 
+// Get the user's account data using a valid JWT
+router.get('/account', auth, async (req, res) => {
+    res.status(200).send(req.user);
+});
+
+// Logs out from a device
+router.post('/logout', auth, async (req, res) => {
+    try {
+        req.user.tokens = req.user.tokens.filter((token) => {
+            return token.token != req.token;
+        });
+        await req.user.save();
+        res.send();
+    } catch (error) {
+        res.status(500).send({ error: error.message });
+    }
+});
+
 module.exports = router;

@@ -1,17 +1,19 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-const auth = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
+    // Strip and verify the token submitted
     const token = req.header('Authorization').replace('Bearer ', '');
-    const data = jwt.verify(token, process.env.JWT_KEY);
+    const data = jwt.verify(token, process.env.JWT_SECRET);
+
     try {
         const user = await User.findOne({
             _id: data._id,
             'tokens.token': token,
         });
-        if (!user) {
-            throw new Error();
-        }
+        if (!user) throw new Error();
+
+        // Add the user data to the request body for use by the main route
         req.user = user;
         req.token = token;
         next();
@@ -21,6 +23,5 @@ const auth = async (req, res, next) => {
         });
     }
 };
-module.exports = auth;
 
 module.exports = verifyToken;
