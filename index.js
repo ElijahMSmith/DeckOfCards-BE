@@ -1,11 +1,32 @@
 const express = require('express');
 const app = express();
-const port = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-})
+// Import routes
+const authRoutes = require('./routes/auth');
 
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-})
+// Middlewares
+app.use(express.json());
+app.use('/api/user', authRoutes);
+
+// Using JWT verification for login/signup
+// app.use("route/info/whatever", verifyToken, importedRoutes)
+
+// Connect to DB
+const mongoose = require('mongoose');
+const dotenv = require('dotenv');
+dotenv.config();
+
+mongoose.connect(
+    process.env.DB_CONNECT,
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    },
+    () => console.log('connected to db')
+);
+
+// Start on port
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}.`);
+});
