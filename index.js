@@ -8,7 +8,8 @@ const replayRoutes = require('./routes/replays');
 // Middlewares
 app.use(express.json());
 app.use('/user', authRoutes);
-app.use('/replay', replayRoutes);
+// TODO: enable and tests once hosting and other higher priorities are resolved
+// app.use('/replay', replayRoutes);
 
 // Connect to DB
 const mongoose = require('mongoose');
