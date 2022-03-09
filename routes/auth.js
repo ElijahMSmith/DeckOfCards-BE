@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
         const token = await user.generateAuthToken();
         res.status(201).send({ user, token });
     } catch (error) {
-        //console.log(error);
+        console.log(error);
         res.status(400).send({ error: error.message });
     }
 });
@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
         const token = await user.generateAuthToken();
         res.status(200).send({ user, token });
     } catch (error) {
-        //console.log(error);
+        console.log(error);
         res.status(400).send({ error: error.message });
     }
 });
@@ -50,12 +50,14 @@ router.get('/account', verifyToken, async (req, res) => {
 // Logs out from a device
 router.post('/logout', verifyToken, async (req, res) => {
     try {
+        console.log(req.user);
         req.user.tokens = req.user.tokens.filter((token) => {
-            return token.token != req.token;
+            return token != req.token;
         });
         await req.user.save();
-        res.send(200);
+        res.status(200).send();
     } catch (error) {
+        console.log(error);
         res.status(500).send({ error: error.message });
     }
 });

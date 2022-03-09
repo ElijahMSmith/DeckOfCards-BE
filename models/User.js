@@ -11,6 +11,7 @@ const userSchema = mongoose.Schema({
     username: {
         type: String,
         required: true,
+        minLength: 7,
         maxLength: 20,
         trim: true,
     },
@@ -32,14 +33,7 @@ const userSchema = mongoose.Schema({
         minLength: 7,
     },
     replays: [ObjectId],
-    tokens: [
-        {
-            token: {
-                type: String,
-                required: true,
-            },
-        },
-    ],
+    tokens: [String],
 });
 
 // Hash the password before saving the user model
@@ -54,7 +48,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
-    user.tokens = user.tokens.concat({ token });
+    user.tokens.push(token);
     await user.save();
     return token;
 };
