@@ -3,13 +3,13 @@ const app = express();
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const replayRoutes = require('./routes/replays');
 
 // Middlewares
 app.use(express.json());
-app.use('/api/user', authRoutes);
-
-// Using JWT verification for login/signup
-// app.use("route/info/whatever", verifyToken, importedRoutes)
+app.use('/user', authRoutes);
+// TODO: enable and tests once hosting and other higher priorities are resolved
+// app.use('/replay', replayRoutes);
 
 // Connect to DB
 const mongoose = require('mongoose');
@@ -22,7 +22,7 @@ mongoose.connect(
         useNewUrlParser: true,
         useUnifiedTopology: true,
     },
-    () => console.log('connected to db')
+    () => console.log('Connected to db')
 );
 
 // Start on port
