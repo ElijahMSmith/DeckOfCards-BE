@@ -4,7 +4,8 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon index.js"
+        "start-dev": "nodemon index.js",
+        "start": "pm2 start index.js --no-daemon"
     },
     "repository": {
         "type": "git",
@@ -22,12 +23,12 @@
         "open-cli": "^7.0.1"
     },
     "dependencies": {
-        "@hapi/joi": "^17.1.1",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
         "express": "^4.17.3",
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.2.4",
+        "pm2": "^5.2.0",
         "validator": "^13.7.0"
     }
 }
