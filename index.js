@@ -8,8 +8,10 @@ const replayRoutes = require('./routes/replays');
 // Middlewares
 app.use(express.json());
 app.use('/user', authRoutes);
-// TODO: enable and tests once hosting and other higher priorities are resolved
 app.use('/replay', replayRoutes);
+
+// Socket server
+const startSocketServer = require('./socketServer');
 
 // Connect to DB
 const mongoose = require('mongoose');
@@ -27,6 +29,8 @@ mongoose.connect(
 
 // Start on port
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
+
+startSocketServer(server);

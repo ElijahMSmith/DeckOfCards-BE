@@ -1,0 +1,27 @@
+How is this going to work:
+
+- Server starts listening in index.js
+- Each client connects to the server when the log in to their device
+- Requests:
+    - Create a game
+        - Creates a new game object in storage
+        - Returns the room ID for that game
+    - Join a game
+        - Checks if that game exists or not
+        - If not, returns a failure
+        - If so, connect that player to the game as the highest open player slot
+        - Return the full game state data at the time of joining
+    - Start a game
+        - If the user isn't the manager of a lobby, does nothing
+        - Changes the state of the game to in-progress and sends update to all devices
+    - Perform a game action
+        - Server code runs that action and updates the game state
+        - Send ONLY the pieces of game state that have changed back to all clients
+        - Clients can then replace the changed state and re-render
+
+- This puts the burden of playing actions on the server, but playing replays locally will require the same code.
+    - MAKE SURE TO ENCAPSULATE THE GAME STATE MANAGER SO IT CAN BE INCLUDED LOCALLY ON THE CLIENT AS WELL BASED ON THE GAME ACTION LOG
+
+
+- Authenticating a socket: Send in the handshake header "auth" the JWT and user ID, verify it
+- Store the user ID in the socket object for quick reference later
