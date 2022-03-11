@@ -68,10 +68,6 @@ const replaySchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    initialDealer: {
-        type: Number,
-        default: 1,
-    },
     autoAbsorbCards: {
         type: Boolean,
         default: false,

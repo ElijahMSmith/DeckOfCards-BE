@@ -1,5 +1,7 @@
 temp.js
 
+.vscode/
+
 # Logs
 logs
 *.log
