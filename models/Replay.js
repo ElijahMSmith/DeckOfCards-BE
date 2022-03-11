@@ -10,12 +10,6 @@ const replaySchema = mongoose.Schema({
         required: true,
     },
 
-    // Replays that were submitted with invalid data are "invalid"
-    invalid: {
-        type: Boolean,
-        default: false,
-    },
-
     // A record of which players are connected as each player number
     // Player number = index + 1
     playerIDs: {
