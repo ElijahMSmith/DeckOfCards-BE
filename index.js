@@ -9,7 +9,7 @@ const replayRoutes = require('./routes/replays');
 app.use(express.json());
 app.use('/user', authRoutes);
 // TODO: enable and tests once hosting and other higher priorities are resolved
-// app.use('/replay', replayRoutes);
+app.use('/replay', replayRoutes);
 
 // Connect to DB
 const mongoose = require('mongoose');

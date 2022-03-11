@@ -84,26 +84,13 @@ const replaySchema = mongoose.Schema({
     },
 });
 
-/*
-playerIDs: {
-        type: [{
-            allIDs: {
-                type: [ObjectId],
-                required: true,
-            },
-        }],
-        minLength: 8,
-        maxLength: 8,
-        required: true,
-    },
-*/
-
 // Is a specific player ID in this replay's playerIDs array anywhere
 replaySchema.methods.containsPlayerID = function (queryingID) {
     const replay = this;
     try {
         for (let playerNoObj of replay.playerIDs) {
             for (let playerID of playerNoObj.allIDs) {
+                console.log("'" + playerID + "' vs '" + queryingID + "'");
                 if (playerID == queryingID) return true;
             }
         }
