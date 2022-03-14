@@ -72,6 +72,10 @@ const replaySchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    playFacedDown: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 // Is a specific player ID in this replay's playerIDs array anywhere
