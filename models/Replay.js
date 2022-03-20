@@ -12,6 +12,7 @@ const replaySchema = mongoose.Schema({
 
     // A record of which players are connected as each player number
     // Player number = index + 1
+    // This looks dumb, but there appears to be no 2D array support in Mongoose
     playerIDs: {
         type: [
             {

@@ -47,6 +47,21 @@ router.get('/account', verifyToken, async (req, res) => {
     res.status(200).send(req.user);
 });
 
+// Get any arbitrary user's username from the ID property
+router.get('/account/:id', verifyToken, async (req, res) => {
+    const id = req.params.id;
+    User.findOne({
+        _id: id,
+    }).exec(function (err, user) {
+        if (err)
+            return res.status(400).send({
+                error: 'The requested user does not exist.',
+            });
+
+        res.status(200).send(user.username);
+    });
+});
+
 // Logs out from a device
 router.post('/logout', verifyToken, async (req, res) => {
     try {

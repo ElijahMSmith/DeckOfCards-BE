@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "commonjs",
+        "allowJs": true,
+        "watch": true,
+        "lib": ["dom", "es2020"],
+        "outDir": "./models/build/"
+    },
+    "types": ["chrome"],
+    "include": ["./src/*"]
+}

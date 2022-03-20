@@ -1,13 +1,13 @@
-module.exports = class Card {
-    value; // A-Za-z+-
-    numericVal;
-    position; // 0, 1, ...
+export class Card {
+    value: string; // A-Za-z+-
+    numericVal: number; // 1-13
+    suit: string; // Spades, Clubs, Diamonds, Hearts
+    revealed: boolean = false;
 
-    constructor(val, pos) {
+    constructor(val: string) {
         this.value = val;
-        this.position = pos;
-        this.numericVal = this.getNumericVal(val);
-        this.suit = this.getSuit(val);
+        this.numericVal = this.getNumericVal();
+        this.suit = this.getSuit();
     }
 
     // 1-13, A-M, 65-77 = hearts
@@ -16,16 +16,10 @@ module.exports = class Card {
     // 40-52, n-z, 110-122 = spades
     getSuit() {
         const code = this.value.charCodeAt(0);
-        switch (code) {
-            case code >= 110:
-                return 'Spades';
-            case code >= 97:
-                return 'Clubs';
-            case code >= 78:
-                return 'Diamonds';
-            default:
-                return 'Hearts';
-        }
+        if (code >= 110) return 'Spades';
+        else if (code >= 97) return 'Clubs';
+        else if (code >= 78) return 'Diamonds';
+        else return 'Hearts';
     }
 
     // Ace = 1, 2, 3, ..., 10, Jack = 11, ...
@@ -51,4 +45,4 @@ module.exports = class Card {
 
         return `${build} of ${suit}`;
     }
-};
+}
