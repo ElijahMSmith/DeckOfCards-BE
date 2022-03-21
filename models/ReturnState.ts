@@ -14,4 +14,6 @@ export class ReturnState {
     player6?: Player;
     player7?: Player;
     player8?: Player;
+
+    currentDealer?: number;
 }

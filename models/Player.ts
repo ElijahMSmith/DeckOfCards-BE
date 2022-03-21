@@ -25,4 +25,16 @@ export class Player {
     vacant(): boolean {
         return !this.username && !this._id;
     }
+
+    cleanUp(autoAbsorb = false): CardSet {
+        this.username = this._id = null;
+        return autoAbsorb ? this.absorbCards() : null;
+    }
+
+    absorbCards(): CardSet {
+        const merged = CardSet.merge(this.hand, this.table);
+        this.hand.clear();
+        this.table.clear();
+        return merged;
+    }
 }

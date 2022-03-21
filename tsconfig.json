@@ -8,5 +8,5 @@
         "outDir": "./models/build/"
     },
     "types": ["chrome"],
-    "include": ["./src/*"]
+    "include": ["./models/*"]
 }

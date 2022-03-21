@@ -10,7 +10,7 @@ export class CardSet {
     }
 
     // times = Number
-    shuffle(times: number = this.contents.length * 3): void {
+    shuffle(times: number = this.contents.length * 5): void {
         while (times > 0) {
             const rand1 = Math.floor(Math.random() * this.contents.length);
             const rand2 = Math.floor(Math.random() * this.contents.length);
@@ -21,11 +21,11 @@ export class CardSet {
     }
 
     hideAll(): void {
-        for (let card of this.contents) card.revealed = false;
+        for (let card of this.contents) card.hide();
     }
 
     revealAll(): void {
-        for (let card of this.contents) card.revealed = true;
+        for (let card of this.contents) card.show();
     }
 
     // val = char (what to find)
@@ -41,7 +41,15 @@ export class CardSet {
         const index = this.indexOf(toReveal);
         if (index === -1) return false;
 
-        this.contents[index].revealed = !this.contents[index].revealed;
+        this.contents[index].show();
+        return true;
+    }
+
+    hideCard(toHide: string): boolean {
+        const index = this.indexOf(toHide);
+        if (index === -1) return false;
+
+        this.contents[index].hide();
         return true;
     }
 
@@ -55,7 +63,7 @@ export class CardSet {
     // value = char
     // position = Number (optional)
     insertCard(card: Card, position: number = this.contents.length): void {
-        card.revealed = false;
+        card.hide();
         this.contents.splice(position ?? this.contents.length, 0, card);
     }
 
@@ -66,12 +74,19 @@ export class CardSet {
         );
     }
 
-    length(): number {
+    size(): number {
         return this.contents.length;
     }
 
     combineInto(other: CardSet): void {
         other.contents = other.contents.concat(this.contents);
+        this.clear();
+    }
+
+    static merge(set1: CardSet, set2: CardSet): CardSet {
+        const merged = new CardSet();
+        merged.contents = set1.contents.concat(set2.contents);
+        return merged;
     }
 
     clear(): void {

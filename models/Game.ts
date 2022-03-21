@@ -5,6 +5,7 @@ import { Pile } from './Pile';
 import { ReplayObject } from './ReplayObject';
 import { ReturnState } from './ReturnState';
 import { CardSet } from './CardSet';
+import User from './User';
 
 enum PileID {
     DECK = 'F',
@@ -36,6 +37,7 @@ export class Game {
     started: boolean = false;
     gameOwner: string;
     rules: Rules;
+    currentDealer: number;
 
     deck: Pile;
     faceUp: Pile;
@@ -53,7 +55,7 @@ export class Game {
 
         this.deck = new Pile(PileID.DECK);
         this.faceUp = new Pile(PileID.FACEUP, true);
-        this.discard = new Pile(PileID.DISCARD);
+        this.discard = new Pile(PileID.DISCARD, true);
 
         // 1-13, A-M, 65-77 = hearts
         // 14-26, N-Z, 78-90 = diamonds
@@ -72,7 +74,7 @@ export class Game {
             for (let i = 110; i <= 122; i++)
                 this.deck.insertCard(new Card(String.fromCharCode(i)));
 
-        this.deck.shuffle(5 * this.deck.length());
+        this.deck.shuffle();
         this.deckArrangementLog.push(this.deck.toString());
 
         this.playerState = [
@@ -98,7 +100,7 @@ export class Game {
         ];
     }
 
-    performAction(action: string): ReturnState {
+    async performAction(action: string): Promise<ReturnState> {
         // TODO: Take each action and call the function to perform it
         const args = action.split('');
 
@@ -118,7 +120,7 @@ export class Game {
             case Action.ABSORB:
                 return this.absorbCards(args);
             case Action.GIVE:
-                return this.giveCards(args);
+                return this.dealCards(args);
             case Action.NEW_DEALER:
                 return this.newDealer(args);
             case Action.RESET:
@@ -200,15 +202,12 @@ export class Game {
         if (!drawnCard) return null;
 
         if (destinationPile === PileID.DECK) {
-            drawnCard.revealed = false;
             this.deck.addToTop(drawnCard);
             returnObj.deck = this.deck;
         } else if (destinationPile === PileID.FACEUP) {
-            drawnCard.revealed = true;
             this.faceUp.addToTop(drawnCard);
             returnObj.faceUp = this.faceUp;
         } else if (destinationPile === PileID.DISCARD) {
-            drawnCard.revealed = true;
             this.discard.addToTop(drawnCard);
             returnObj.discard = this.discard;
         } else {
@@ -257,26 +256,151 @@ export class Game {
         return returnObj;
     }
 
-    playerJoin(args: string[]): ReturnState {
+    // This action should be performed by the server
+    // The server receives the socket connection and logs the uuid to the first vacant position
+    // This function updates the player object for that respective position
+    async playerJoin(args: string[]): Promise<ReturnState> {
+        const playerNum = parseInt(args[1]);
+
+        const playerObj = this.playerState[playerNum - 1];
+        const positionIDLog = this.playerLog[playerNum - 1].allIDs;
+        const playerID = positionIDLog[positionIDLog.length - 1];
+
+        try {
+            // Get the player's username here
+            const user = await User.findOne({
+                _id: playerID,
+            }).exec();
+            playerObj._id = playerID;
+            playerObj.username = user.username;
+            return {
+                [`player${playerNum}`]: playerObj,
+            };
+        } catch (error) {
+            return null;
+        }
+    }
+
+    playerLeave(args: string[]): ReturnState {
         const returnObj: ReturnState = {};
+        const playerNum = parseInt(args[1]);
+        const playerObj = this.playerState[playerNum - 1];
 
-        // TODO: Handle player transaction
+        const returnedCards = playerObj.cleanUp(this.rules.autoAbsorbCards);
+        if (returnedCards) {
+            returnedCards.combineInto(this.discard);
+            returnObj.discard = this.discard;
+        }
 
+        // If the current dealer is the one who left,
+        // Find another player to be dealer
+        if (playerNum === this.currentDealer) {
+            let i = 1;
+            for (; i <= 8; i++) if (!this.playerState[i - 1].vacant()) break;
+            returnObj.currentDealer = this.currentDealer = i;
+        }
+
+        // TODO: Terminate the game is the game owner leaves
+        // TODO: Terminate the game if there are no more players in the game
+        if (playerNum === this.gameOwner) return this.terminateGame();
+
+        returnObj[`player${playerNum}`] = playerObj;
         return returnObj;
     }
 
-    // TODO: Make a google doc cheat sheet for all game actions with the modifications and share
-    /*
-        playerJoin(args: string[])
-        playerLeave(args: string[])
-        absorbCards(args: string[])
-        giveCards(args: string[])
-        newDealer(args: string[])
-        resetGame()
-        terminateGame()
-    */
+    absorbCards(args: string[]): ReturnState {
+        const returnObj: ReturnState = {};
+        const playerNum = parseInt(args[1]);
+        const playerObj = this.playerState[playerNum - 1];
 
-    exportReplay(): void {
+        const returnedCards = playerObj.absorbCards();
+        returnedCards.combineInto(this.discard);
+
+        return {
+            discard: this.discard,
+            [`player${playerNum}`]: playerObj,
+        };
+    }
+
+    dealCards(args: string[]): ReturnState {
+        const returnObj: ReturnState = {};
+
+        // 1-8, verify it's the correct dealer
+        const dealingPlayer = parseInt(args[1]);
+        // 0 for all, or 1-8
+        const toPlayer = parseInt(args[2]);
+        // deal as many cards <= numCards as the deck has
+        const numCards = parseInt(args[3]);
+
+        if (dealingPlayer !== this.currentDealer) return null;
+
+        if (toPlayer === 0) {
+            // All players
+            let pnum = this.currentDealer + 1;
+            while (this.deck.size() !== 0) {
+                if (pnum > 8) pnum = 1;
+                const topCard = this.deck.removeFromTop();
+                this.playerState[pnum - 1].receiveCard(topCard);
+                pnum++;
+            }
+
+            for (let i = 1; i <= 8; i++)
+                returnObj[`player${i}`] = this.playerState[i - 1];
+        } else {
+            // Single player
+            const playerObj = this.playerState[toPlayer - 1];
+            while (this.deck.size() !== 0) {
+                const topCard = this.deck.removeFromTop();
+                playerObj.receiveCard(topCard);
+            }
+
+            returnObj[`player${toPlayer}`] = this.playerState[toPlayer - 1];
+        }
+
+        returnObj.deck = this.deck;
+        this.deckArrangementLog.push(this.deck.toString());
+        return returnObj;
+    }
+
+    newDealer(args: string[]): ReturnState {
+        const newPlayerNum = parseInt(args[1]);
+        this.currentDealer = newPlayerNum;
+
+        return {
+            currentDealer: this.currentDealer,
+        };
+    }
+
+    resetGame(): ReturnState {
+        for (let i = 1; i <= 8; i++) {
+            const playerObj = this.playerState[i - 1];
+            playerObj.hand.combineInto(this.deck);
+            playerObj.table.combineInto(this.deck);
+        }
+
+        this.faceUp.combineInto(this.deck);
+        this.discard.combineInto(this.deck);
+
+        this.deck.hideAll();
+        this.deck.shuffle();
+        this.deckArrangementLog.push(this.deck.toString());
+
+        return {
+            deck: this.deck,
+            faceUp: this.faceUp,
+            discard: this.discard,
+            player1: this.playerState[0],
+            player2: this.playerState[1],
+            player3: this.playerState[2],
+            player4: this.playerState[3],
+            player5: this.playerState[4],
+            player6: this.playerState[5],
+            player7: this.playerState[6],
+            player8: this.playerState[7],
+        };
+    }
+
+    async terminateGame(): Promise<ReturnState> {
         const replay = new ReplayObject(
             this.playerLog,
             this.deckArrangementLog,
@@ -284,8 +408,14 @@ export class Game {
             this.rules
         );
 
-        // TODO: Save to Mongoose
+        // TODO: Save to MongoDB
+
+        // TODO: Add ID of replay to all participating players
+
+        return null;
     }
+
+    // TODO: Make a google doc cheat sheet for all game actions with the modifications and share
 }
 
 function isNumeric(value: string) {

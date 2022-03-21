@@ -29,6 +29,14 @@ export class Card {
         return (fromZero % 13) + 1;
     }
 
+    hide() {
+        this.revealed = false;
+    }
+
+    show() {
+        this.revealed = true;
+    }
+
     toString() {
         if (this.value === '+') return 'Joker 1';
         else if (this.value === '-') return 'Joker 2';

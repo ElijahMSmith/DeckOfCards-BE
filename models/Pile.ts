@@ -13,13 +13,11 @@ export class Pile extends CardSet {
 
     addToTop(card: Card): void {
         this.insertCard(card);
-        if (this.faceUp) card.revealed = true;
-        else card.revealed = false;
+        if (this.faceUp) card.show();
+        else card.hide();
     }
 
-    removeFromTop(): Card | null {
-        return this.contents.length === 0
-            ? null
-            : this.contents.splice(0, 1)[0];
+    removeFromTop(): Card {
+        return this.contents.pop();
     }
 }
