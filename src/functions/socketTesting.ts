@@ -1,8 +1,10 @@
 import io from 'socket.io-client';
+import dotenv = require('dotenv');
+dotenv.config();
 
 const socket = io('http://localhost:8080', {
     auth: {
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MjJhNzZhNjlkZmQyZjMyNDEyMTNmOTYiLCJpYXQiOjE2NDY5NTAwNTR9.luPzsNJaK9GWKLHKsvCukcHJGJyNczzqf_1BZg4q_ps',
+        token: process.env.TESTING_TOKEN,
     },
 });
 
