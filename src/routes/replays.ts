@@ -1,6 +1,6 @@
+import Replay from '../models/Replay';
+import verifyToken from './verifyToken';
 const router = require('express').Router();
-const Replay = require('../models/Replay');
-const verifyToken = require('./verifyToken');
 
 // Get a replay from the database (any client)
 router.get('/retrieve', verifyToken, async (req, res) => {
@@ -25,12 +25,11 @@ router.get('/retrieve', verifyToken, async (req, res) => {
 
         if (!rep.containsPlayerID(playerID))
             return res.status(403).send({
-                error:
-                    'The requestor does not have access to the requested replay.',
+                error: 'The requestor does not have access to the requested replay.',
             });
 
         res.status(200).send(rep);
     });
 });
 
-module.exports = router;
+export default router;

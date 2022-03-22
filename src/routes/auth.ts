@@ -1,6 +1,6 @@
+import User from '../models/User';
+import verifyToken from './verifyToken';
 const router = require('express').Router();
-const User = require('../models/User');
-const verifyToken = require('./verifyToken');
 
 // Registration route
 router.post('/register', async (req, res) => {
@@ -77,4 +77,4 @@ router.post('/logout', verifyToken, async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

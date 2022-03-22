@@ -6,6 +6,7 @@ import { ReplayObject } from './ReplayObject';
 import { ReturnState } from './ReturnState';
 import { CardSet } from './CardSet';
 import User from './User';
+import Replay from './Replay';
 
 enum PileID {
     DECK = 'F',
@@ -35,7 +36,6 @@ export class PlayerLogData {
 
 export class Game {
     started: boolean = false;
-    gameOwner: string;
     rules: Rules;
     currentDealer: number;
 
@@ -49,9 +49,8 @@ export class Game {
     playerLog: PlayerLogData[];
     deckArrangementLog: string[] = [];
 
-    constructor(rules: Rules, gameOwner: string) {
+    constructor(rules: Rules) {
         this.rules = rules;
-        this.gameOwner = gameOwner;
 
         this.deck = new Pile(PileID.DECK);
         this.faceUp = new Pile(PileID.FACEUP, true);
@@ -101,7 +100,6 @@ export class Game {
     }
 
     async performAction(action: string): Promise<ReturnState> {
-        // TODO: Take each action and call the function to perform it
         const args = action.split('');
 
         switch (args[0].toUpperCase()) {
@@ -300,9 +298,11 @@ export class Game {
             returnObj.currentDealer = this.currentDealer = i;
         }
 
-        // TODO: Terminate the game is the game owner leaves
-        // TODO: Terminate the game if there are no more players in the game
-        if (playerNum === this.gameOwner) return this.terminateGame();
+        // Terminate the game is the game owner leaves
+        if (playerNum === 1) {
+            this.terminateGame();
+            return { terminated: true };
+        }
 
         returnObj[`player${playerNum}`] = playerObj;
         return returnObj;
@@ -401,18 +401,47 @@ export class Game {
     }
 
     async terminateGame(): Promise<ReturnState> {
-        const replay = new ReplayObject(
+        const replayObj = new ReplayObject(
             this.playerLog,
             this.deckArrangementLog,
             this.actionLog,
             this.rules
         );
 
-        // TODO: Save to MongoDB
+        const replayDoc = new Replay(replayObj, true);
+        await replayDoc.save();
+        const replayID = replayDoc._id;
 
-        // TODO: Add ID of replay to all participating players
+        for (let pnum = 1; pnum <= 8; pnum++) {
+            const allIDs = this.playerLog[pnum].allIDs;
+            for (let pid of allIDs) {
+                try {
+                    User.findOne({
+                        _id: pid,
+                    }).exec((err, user) => {
+                        if (err)
+                            console.log(
+                                'Could not save replay to user document\n' + err
+                            );
 
-        return null;
+                        const userReplays = user.replays;
+
+                        if (userReplays.length >= 5)
+                            userReplays.splice(0, userReplays.length - 5 + 1);
+
+                        userReplays.push(replayID); // Add to end
+                        user.save();
+                    });
+                } catch (error) {
+                    console.log(
+                        'Adding replay to user failed: not find user with id ' +
+                            pid
+                    );
+                }
+            }
+        }
+
+        return { terminated: true };
     }
 
     // TODO: Make a google doc cheat sheet for all game actions with the modifications and share

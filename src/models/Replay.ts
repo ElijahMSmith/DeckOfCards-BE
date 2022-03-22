@@ -1,7 +1,30 @@
-const mongoose = require('mongoose');
-var ObjectId = require('mongodb').ObjectId;
+import { Schema, model, Types } from 'mongoose';
 
-const replaySchema = mongoose.Schema({
+class PlayersByPosition {
+    allIDs: Types.ObjectId[];
+}
+
+interface IReplay {
+    dateCreated: Date;
+    playerIDs: PlayersByPosition[];
+    deckArrangements: string[];
+    actionLog: string;
+
+    excludeDealer: boolean;
+
+    withoutHearts: boolean;
+    withoutDiamonds: boolean;
+    withoutClubs: boolean;
+    withoutSpades: boolean;
+
+    jokersEnabled: boolean;
+    autoAbsorbCards: boolean;
+    playFacedDown: boolean;
+
+    containsPlayerID(id: Types.ObjectId): boolean;
+}
+
+const replaySchema = new Schema<IReplay>({
     // ------------- Required fields -------------
 
     // Date the game was played and finished
@@ -17,7 +40,7 @@ const replaySchema = mongoose.Schema({
         type: [
             {
                 allIDs: {
-                    type: [ObjectId],
+                    type: [Types.ObjectId],
                     required: true,
                 },
             },
@@ -80,13 +103,15 @@ const replaySchema = mongoose.Schema({
 });
 
 // Is a specific player ID in this replay's playerIDs array anywhere
-replaySchema.methods.containsPlayerID = function (queryingID) {
-    const replay = this;
+replaySchema.methods.containsPlayerID = function (
+    queryingID: Types.ObjectId
+): boolean {
+    const replay: IReplay = this;
     try {
         for (let playerNoObj of replay.playerIDs) {
             for (let playerID of playerNoObj.allIDs) {
                 console.log("'" + playerID + "' vs '" + queryingID + "'");
-                if (playerID == queryingID) return true;
+                if (playerID === queryingID) return true;
             }
         }
 
@@ -96,5 +121,5 @@ replaySchema.methods.containsPlayerID = function (queryingID) {
     }
 };
 
-const Replay = mongoose.model('Replay', replaySchema);
-module.exports = Replay;
+const Replay = model<IReplay>('Replay', replaySchema);
+export default Replay;

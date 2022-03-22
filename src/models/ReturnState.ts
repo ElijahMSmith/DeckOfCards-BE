@@ -2,6 +2,8 @@ import { Pile } from './Pile';
 import { Player } from './Player';
 
 export class ReturnState {
+    terminated?: boolean;
+
     deck?: Pile;
     faceUp?: Pile;
     discard?: Pile;

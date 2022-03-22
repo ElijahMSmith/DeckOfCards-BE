@@ -2,12 +2,15 @@
     "name": "deckofcards-be",
     "version": "1.0.0",
     "description": "",
-    "main": "index.js",
+    "main": "src/index.js",
     "scripts": {
-        "start-dev": "nodemon index.js",
-        "start": "node index.js",
-        "genReplay": "node functions/createDummyReplay.js",
-        "testSocket": "nodemon functions/socketTesting.js"
+        "build": "tsc",
+        "build:dev": "tsc --watch",
+        "prestart": "npm run build",
+        "start:dev": "nodemon src/build/index.js",
+        "start": "node src/build/index.js",
+        "genReplay": "node src/build/functions/createDummyReplay.js",
+        "testSocket": "nodemon src/build/functions/socketTesting.js"
     },
     "repository": {
         "type": "git",
@@ -20,6 +23,10 @@
     },
     "homepage": "https://github.com/elijahmsmith/DeckOfCards-BE#readme",
     "devDependencies": {
+        "@types/bcryptjs": "^2.4.2",
+        "@types/express": "^4.17.13",
+        "@types/jsonwebtoken": "^8.5.8",
+        "@types/validator": "^13.7.1",
         "dotenv": "^16.0.0",
         "nodemon": "^2.0.15",
         "socket.io-client": "^4.4.1",

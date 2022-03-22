@@ -1,9 +1,18 @@
 // Socket server
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const jwt = require('jsonwebtoken');
+import { createServer, Server as httpServer } from 'http';
+import { Server, Socket } from 'socket.io';
+import { verify } from 'jsonwebtoken';
 
-module.exports = function createSocketServer(server) {
+interface ISocket extends Socket {
+    playerID?: string;
+    token?: string;
+}
+
+interface JwtPayload {
+    _id: string;
+}
+
+export default (server: httpServer) => {
     const io = new Server(server, {
         cors: {
             origin: '*',
@@ -15,12 +24,12 @@ module.exports = function createSocketServer(server) {
         console.log(err);
     });
 
-    io.use((socket, next) => {
+    io.use((socket: ISocket, next) => {
         try {
-            const data = jwt.verify(
+            const data = verify(
                 socket.handshake.auth.token,
                 process.env.JWT_SECRET
-            );
+            ) as JwtPayload;
             socket.playerID = data._id;
             socket.token = socket.handshake.auth.token;
             next();

@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import User from '../models/User';
+import jwt = require('jsonwebtoken');
 
 const verifyToken = async (req, res, next) => {
     // Strip and verify the token submitted
-    let data, token;
+    let data: any, token: string;
     try {
         token = req.header('Authorization').replace('Bearer ', '');
         data = jwt.verify(token, process.env.JWT_SECRET);
@@ -29,4 +29,4 @@ const verifyToken = async (req, res, next) => {
     });
 };
 
-module.exports = verifyToken;
+export default verifyToken;

@@ -1,13 +1,25 @@
-const mongoose = require('mongoose');
-const validator = require('validator');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-var ObjectId = require('mongodb').ObjectId;
+import { Model, Schema, model, Types } from 'mongoose';
+import validator from 'validator';
+import bcrypt = require('bcryptjs');
+import jwt = require('jsonwebtoken');
 
 // Note to future self: functions declared below that need access
 // to the document themselves with "this" won't work as arrow functions.
 
-const userSchema = mongoose.Schema({
+interface IUser {
+    username: string;
+    email: string;
+    password: string;
+    replays: Types.ObjectId[];
+    tokens: string[];
+    generateAuthToken(): Promise<string>;
+}
+
+interface UserModel extends Model<IUser> {
+    findByCredentials(email: string, password: string): Promise<IUser>;
+}
+
+const userSchema = new Schema<IUser, UserModel>({
     username: {
         type: String,
         required: true,
@@ -22,9 +34,9 @@ const userSchema = mongoose.Schema({
         trim: true,
         unique: true,
         lowercase: true,
-        validate: (value) => {
+        validate: (value: string) => {
             if (!validator.isEmail(value))
-                throw new Error({ error: 'Invalid Email address' });
+                throw new Error('Invalid Email address');
         },
     },
     password: {
@@ -32,7 +44,7 @@ const userSchema = mongoose.Schema({
         required: true,
         minLength: 7,
     },
-    replays: [ObjectId],
+    replays: [Types.ObjectId],
     tokens: [String],
 });
 
@@ -45,7 +57,7 @@ userSchema.pre('save', async function (next) {
 });
 
 // Generate an auth token for the user, unique to the login from their current device
-userSchema.methods.generateAuthToken = async function () {
+userSchema.methods.generateAuthToken = async function (): Promise<string> {
     const user = this;
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
     user.tokens.push(token);
@@ -54,7 +66,10 @@ userSchema.methods.generateAuthToken = async function () {
 };
 
 // Search for a user by email and password
-userSchema.statics.findByCredentials = async function (email, password) {
+userSchema.statics.findByCredentials = async function (
+    email: string,
+    password: string
+): Promise<IUser> {
     const user = await User.findOne({ email });
     if (!user) throw new Error('Could not find the given email');
 
@@ -64,5 +79,5 @@ userSchema.statics.findByCredentials = async function (email, password) {
     return user;
 };
 
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+const User = model<IUser, UserModel>('User', userSchema);
+export default User;
