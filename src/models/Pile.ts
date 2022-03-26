@@ -12,9 +12,7 @@ export class Pile extends CardSet {
     }
 
     addToTop(card: Card): void {
-        this.insertCard(card);
-        if (this.faceUp) card.show();
-        else card.hide();
+        this.insertCard(card, this.faceUp);
     }
 
     removeFromTop(): Card {

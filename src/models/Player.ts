@@ -19,7 +19,7 @@ export class Player {
     }
 
     receiveCard(card: Card) {
-        this.hand.insertCard(card);
+        this.hand.insertCard(card, false);
     }
 
     vacant(): boolean {

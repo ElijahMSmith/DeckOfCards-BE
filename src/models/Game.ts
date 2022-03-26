@@ -143,6 +143,7 @@ export class Game {
 
         let destSet: CardSet;
         let returnObj: ReturnState = {};
+        let showing = false;
         if (isNumeric(destinationID)) {
             const destPlayerNum = parseInt(destinationID);
             const destPlayerObj = this.playerState[destPlayerNum - 1];
@@ -156,13 +157,16 @@ export class Game {
                 case PileID.FACEUP:
                     destSet = this.faceUp;
                     returnObj.faceUp = this.faceUp;
+                    showing = true;
                 case PileID.DISCARD:
                     destSet = this.discard;
                     returnObj.discard = this.discard;
+                    showing = true;
                 case PileID.HAND:
                     destSet = playerObj.hand;
                 case PileID.TABLE:
                     destSet = playerObj.table;
+                    showing = !this.rules.playFacedDown;
             }
         }
 
@@ -171,10 +175,7 @@ export class Game {
 
         returnObj[`player${playerNum}`] = playerObj;
 
-        if (destinationID === PileID.TABLE && this.rules.playFacedDown) {
-            card.hide();
-            destSet.insertCard(card);
-        }
+        destSet.insertCard(card, showing);
 
         return returnObj;
     }
@@ -339,12 +340,19 @@ export class Game {
 
         if (toPlayer === 0) {
             // All players
-            let pnum = this.currentDealer + 1;
+            let pnum = this.currentDealer;
             while (this.deck.size() !== 0) {
-                if (pnum > 8) pnum = 1;
                 const topCard = this.deck.removeFromTop();
+
+                do {
+                    ++pnum;
+                    if (pnum > 8) pnum = 1;
+                } while (
+                    this.playerState[pnum - 1].vacant() &&
+                    !(this.rules.excludeDealer && this.currentDealer === pnum)
+                );
+
                 this.playerState[pnum - 1].receiveCard(topCard);
-                pnum++;
             }
 
             for (let i = 1; i <= 8; i++)
