@@ -63,7 +63,6 @@ export class CardSet {
     // value = char
     // position = Number (optional)
     insertCard(card: Card, position: number = this.contents.length): void {
-        card.hide();
         this.contents.splice(position ?? this.contents.length, 0, card);
     }
 

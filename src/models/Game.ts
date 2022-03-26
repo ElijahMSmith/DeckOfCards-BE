@@ -171,7 +171,10 @@ export class Game {
 
         returnObj[`player${playerNum}`] = playerObj;
 
-        destSet.insertCard(card);
+        if (destinationID === PileID.TABLE && this.rules.playFacedDown) {
+            card.hide();
+            destSet.insertCard(card);
+        }
 
         return returnObj;
     }
