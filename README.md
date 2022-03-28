@@ -3,6 +3,8 @@
 TODOS:
 
 -   Test building and typescript conversion of previously-working code
+-   Create some way for user to create a new game (either HTTP req or socket channel)
+-   Code to manage game codes and states
 -   Start working with actual socket server to get testing ready
 
 -   Better error handling for login/registration routes in particular, as needed by FE team
