@@ -4,10 +4,12 @@ import jwt = require('jsonwebtoken');
 const verifyToken = async (req, res, next) => {
     // Strip and verify the token submitted
     let data: any, token: string;
+    console.log('Secret: ' + process.env.JWT_SECRET);
     try {
         token = req.header('Authorization').replace('Bearer ', '');
         data = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
+        console.error(error);
         return res
             .status(400)
             .send({ error: 'Provided authorization token is invalid.' });

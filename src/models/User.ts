@@ -59,6 +59,7 @@ userSchema.pre('save', async function (next) {
 // Generate an auth token for the user, unique to the login from their current device
 userSchema.methods.generateAuthToken = async function (): Promise<string> {
     const user = this;
+    console.log('Generating with secret: ' + process.env.JWT_SECRET);
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
     user.tokens.push(token);
     await user.save();

@@ -1,5 +1,6 @@
 import { Pile } from './Pile';
 import { Player } from './Player';
+import { Rules } from './Rules';
 
 export class ReturnState {
     terminated?: boolean;
@@ -18,4 +19,5 @@ export class ReturnState {
     player8?: Player;
 
     currentDealer?: number;
+    rules?: Rules;
 }

@@ -49,6 +49,8 @@ export class Game {
     playerLog: PlayerLogData[];
     deckArrangementLog: string[] = [];
 
+    blacklistedPlayers = [];
+
     constructor(rules: Rules) {
         this.rules = rules;
 
@@ -97,6 +99,28 @@ export class Game {
             { allIDs: [] },
             { allIDs: [] },
         ];
+    }
+
+    getCurrentState(): ReturnState {
+        return {
+            terminated: false,
+
+            deck: this.deck,
+            faceUp: this.faceUp,
+            discard: this.discard,
+
+            player1: this.playerState[1 - 1],
+            player2: this.playerState[2 - 1],
+            player3: this.playerState[3 - 1],
+            player4: this.playerState[4 - 1],
+            player5: this.playerState[5 - 1],
+            player6: this.playerState[6 - 1],
+            player7: this.playerState[7 - 1],
+            player8: this.playerState[8 - 1],
+
+            currentDealer: this.currentDealer,
+            rules: this.rules,
+        };
     }
 
     async performAction(action: string): Promise<ReturnState> {
@@ -288,6 +312,8 @@ export class Game {
         const playerNum = parseInt(args[1]);
         const playerObj = this.playerState[playerNum - 1];
 
+        if (args[2] === 'K') this.blacklistedPlayers.push(playerObj._id);
+
         const returnedCards = playerObj.cleanUp(this.rules.autoAbsorbCards);
         if (returnedCards) {
             returnedCards.combineInto(this.discard);
@@ -313,7 +339,6 @@ export class Game {
     }
 
     absorbCards(args: string[]): ReturnState {
-        const returnObj: ReturnState = {};
         const playerNum = parseInt(args[1]);
         const playerObj = this.playerState[playerNum - 1];
 
@@ -455,11 +480,54 @@ export class Game {
         return { terminated: true };
     }
 
-    // TODO: Make a google doc cheat sheet for all game actions with the modifications and share
+    firstOpenPosition(): number {
+        for (let i = 1; i <= 8; i++)
+            if (this.playerState[i - 1].vacant()) return i;
+        return -1;
+    }
+
+    getPlayerPositionByID(pid: string): number {
+        for (let i = 1; i <= 8; i++)
+            if (this.playerState[i - 1]._id === pid) return i;
+        return -1;
+    }
+
+    toString(): string {
+        return `
+            Deck: '${this.deck.toString()}'
+            FaceUp: '${this.faceUp.toString()}'
+            Discard: '${this.discard.toString()}'
+
+            Player1:
+            Hand:  '${this.playerState[1 - 1].hand.toString()}'
+            Table: '${this.playerState[1 - 1].table.toString()}'
+            Player2:
+            Hand:  '${this.playerState[2 - 1].hand.toString()}'
+            Table: '${this.playerState[2 - 1].table.toString()}'
+            Player3:
+            Hand:  '${this.playerState[3 - 1].hand.toString()}'
+            Table: '${this.playerState[3 - 1].table.toString()}'
+            Player4:
+            Hand:  '${this.playerState[4 - 1].hand.toString()}'
+            Table: '${this.playerState[4 - 1].table.toString()}'
+            Player5:
+            Hand:  '${this.playerState[5 - 1].hand.toString()}'
+            Table: '${this.playerState[5 - 1].table.toString()}'
+            Player6:
+            Hand:  '${this.playerState[6 - 1].hand.toString()}'
+            Table: '${this.playerState[6 - 1].table.toString()}'
+            Player7:
+            Hand:  '${this.playerState[7 - 1].hand.toString()}'
+            Table: '${this.playerState[7 - 1].table.toString()}'
+            Player8:
+            Hand:  '${this.playerState[8 - 1].hand.toString()}'
+            Table: '${this.playerState[8 - 1].table.toString()}'
+            `;
+    }
 }
 
 function isNumeric(value: string) {
     return /^-?\d+$/.test(value);
 }
 
-module.exports = {};
+export default Game;

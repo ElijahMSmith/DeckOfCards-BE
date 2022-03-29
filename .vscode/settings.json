@@ -1,8 +1,5 @@
 {
-    "cSpell.words": [
-        "middlewares",
-        "parens"
-    ],
+    "cSpell.words": ["middlewares", "parens", "pnum"],
     "workbench.colorCustomizations": {
         "activityBar.activeBackground": "#2f7c47",
         "activityBar.activeBorder": "#422c74",

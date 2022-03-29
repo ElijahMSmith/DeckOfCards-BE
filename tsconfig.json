@@ -3,11 +3,11 @@
         "target": "es2020",
         "module": "commonjs",
         "allowJs": true,
-        "watch": true,
         "lib": ["dom", "es2020"],
         "outDir": "./src/build/",
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
     },
-    "types": ["chrome"],
-    "include": ["./src/*"]
+    "include": ["./src"],
+    "exclude": ["./src/build"]
 }
