@@ -2,15 +2,15 @@
     "name": "deckofcards-be",
     "version": "1.0.0",
     "description": "",
-    "main": "src/index.js",
+    "main": "src/build/index.js",
     "scripts": {
-        "build": "tsc",
-        "build:dev": "tsc --watch",
+        "build": "tsc --build --clean && tsc",
+        "build:dev": "tsc --build --clean && tsc --watch",
         "prestart": "npm run build",
         "start:dev": "nodemon src/build/index.js",
         "start": "node src/build/index.js",
         "genReplay": "node src/build/functions/createDummyReplay.js",
-        "testSocket": "nodemon src/build/functions/socketTesting.js"
+        "testSocket": "node src/build/functions/socketTests/socketTesting.js"
     },
     "repository": {
         "type": "git",

@@ -62,6 +62,10 @@ export default (server: httpServer) => {
             }
         });
 
+        socket.on('test', (args: any[]) => {
+            console.log(args);
+        });
+
         // Finished disconnecting, all rooms have been left
         socket.on('disconnect', () => {
             console.log('User disconnected - ' + socket.id);

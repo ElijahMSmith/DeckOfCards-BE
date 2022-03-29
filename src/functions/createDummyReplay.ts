@@ -46,7 +46,8 @@ async function run() {
     if (error) console.log(error);
 }
 
-mongoose.connect(process.env.DB_CONNECT, () => {
+mongoose.connect(process.env.DB_CONNECT, async () => {
     console.log('Connected to db');
-    run();
+    await run();
+    mongoose.connection.close();
 });
