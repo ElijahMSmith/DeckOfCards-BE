@@ -11,7 +11,7 @@ export class CardSet {
 
     // times = Number
     shuffle(times: number = this.contents.length * 5): void {
-        while (times > 0) {
+        while (--times > 0) {
             const rand1 = Math.floor(Math.random() * this.contents.length);
             const rand2 = Math.floor(Math.random() * this.contents.length);
             const temp = this.contents[rand1];

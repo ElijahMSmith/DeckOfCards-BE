@@ -62,6 +62,7 @@ export default (server: httpServer) => {
             }
         });
 
+        // For debugging
         socket.on('test', (args: any[]) => {
             console.log(args);
         });
@@ -73,11 +74,11 @@ export default (server: httpServer) => {
 
         // Create a new game with the submitted rules, choosing an unused code
         socket.on('create', (rules: Rules, callback) => {
+            console.log({ event: 'create', rules, callback });
             let code: string;
             do {
                 code = Math.floor(Math.random() * 1000000).toString();
             } while (activeGames.has(code));
-
             const newGame = new Game(rules);
             activeGames.set(code, newGame);
 
@@ -86,6 +87,7 @@ export default (server: httpServer) => {
         });
 
         socket.on('joinGame', async (code: string, callback) => {
+            console.log({ event: 'joinGame', code });
             const joiningGame: Game = <Game>activeGames.get(code);
             if (!joiningGame) {
                 callback({ error: 'Invalid game code!' });
@@ -119,6 +121,7 @@ export default (server: httpServer) => {
         });
 
         socket.on('action', async (code: string, action: string, callback) => {
+            console.log({ event: 'Action', code, action });
             const game = <Game>activeGames.get(code);
             if (!game) {
                 callback({ error: 'This game does not exist!' });
@@ -140,5 +143,7 @@ export default (server: httpServer) => {
                 activeGames.delete(code);
             }
         });
+
+        socket.on('clearForTests', () => activeGames.clear);
     });
 };
