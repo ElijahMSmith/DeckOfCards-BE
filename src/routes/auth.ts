@@ -10,7 +10,7 @@ router.post('/register', async (req, res) => {
         const token = await user.generateAuthToken();
         res.status(201).send({ user, token });
     } catch (error) {
-        console.log(error);
+        console.log('Error 400 - register catch\n' + error);
         res.status(400).send({ error: error.message });
     }
 });
@@ -20,24 +20,30 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        if (!email)
+        if (!email) {
+            console.log('Error 400 - no email');
             return res.status(400).send({ error: 'Email required for login' });
-        if (!password)
+        }
+        if (!password) {
+            console.log('Error 400 - no password');
             return res
                 .status(400)
                 .send({ error: 'Password required for login' });
+        }
 
-        if (typeof email != 'string' || typeof password != 'string')
+        if (typeof email != 'string' || typeof password != 'string') {
+            console.log('Error 400 - must be strings');
             return res
                 .status(400)
                 .send({ error: 'Email and password must be strings' });
+        }
 
         // Guaranteed to be defined if the method finishes without throwing
         const user = await User.findByCredentials(email, password);
         const token = await user.generateAuthToken();
         res.status(200).send({ user, token });
     } catch (error) {
-        console.log(error);
+        console.log('Error 400 - login misc\n' + error);
         res.status(400).send({ error: error.message });
     }
 });
@@ -53,10 +59,12 @@ router.get('/account/:id', verifyToken, async (req, res) => {
     User.findOne({
         _id: id,
     }).exec(function (err, user) {
-        if (err)
+        if (err) {
+            console.log('Error 400 - user does not exist');
             return res.status(400).send({
                 error: 'The requested user does not exist.',
             });
+        }
 
         res.status(200).send(user.username);
     });
@@ -72,7 +80,7 @@ router.post('/logout', verifyToken, async (req, res) => {
         await req.user.save();
         res.status(200).send();
     } catch (error) {
-        console.log(error);
+        console.log('Error 400 - logout misc\n' + error);
         res.status(400).send({ error: error.message });
     }
 });
