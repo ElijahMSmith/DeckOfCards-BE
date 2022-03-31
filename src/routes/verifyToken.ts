@@ -1,13 +1,15 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import User from '../models/User';
+import jwt = require('jsonwebtoken');
 
 const verifyToken = async (req, res, next) => {
     // Strip and verify the token submitted
-    let data, token;
+    let data: any, token: string;
+    console.log('Secret: ' + process.env.JWT_SECRET);
     try {
         token = req.header('Authorization').replace('Bearer ', '');
         data = jwt.verify(token, process.env.JWT_SECRET);
     } catch (error) {
+        console.error('Error 400 - verify token\n' + error);
         return res
             .status(400)
             .send({ error: 'Provided authorization token is invalid.' });
@@ -17,10 +19,12 @@ const verifyToken = async (req, res, next) => {
         _id: data._id,
         tokens: token,
     }).exec(function (err, user) {
-        if (err || !user)
+        if (err || !user) {
+            console.log('Error 401 - Find user\n' + err);
             return res.status(401).send({
                 error: 'Not authorized to access this resource',
             });
+        }
 
         // Add the user data to the request body for use by the main route
         req.user = user;
@@ -29,4 +33,4 @@ const verifyToken = async (req, res, next) => {
     });
 };
 
-module.exports = verifyToken;
+export default verifyToken;

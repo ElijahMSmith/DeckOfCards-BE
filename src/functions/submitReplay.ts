@@ -1,9 +1,10 @@
-const Replay = require('../models/Replay');
-const User = require('../models/User');
+import { ReplayObject } from '../models/ReplayObject';
+import Replay from '../models/Replay';
+import User from '../models/User';
 
 // Submit a replay to the database (only from websocket server)
 // Add the ID of this replay to the user object for every player connected at any point in time
-module.exports.submitToDB = async function (replayObject) {
+export default async (replayObject: ReplayObject): Promise<Error> => {
     try {
         // Try to save replay to db, fails if invalid format
         const rep = new Replay(replayObject, true);

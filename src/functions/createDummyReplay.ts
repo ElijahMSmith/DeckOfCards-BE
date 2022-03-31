@@ -1,7 +1,7 @@
-const submitToDB = require('./submitReplay.js').submitToDB;
+import submitReplay from './submitReplay';
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 dotenv.config();
 
 async function run() {
@@ -42,18 +42,12 @@ async function run() {
         jokersEnabled: true,
     };
 
-    const error = await submitToDB(replayObj);
+    const error = await submitReplay(replayObj);
     if (error) console.log(error);
 }
 
-mongoose.connect(
-    process.env.DB_CONNECT,
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    },
-    () => {
-        console.log('Connected to db');
-        run();
-    }
-);
+mongoose.connect(process.env.DB_CONNECT, async () => {
+    console.log('Connected to db');
+    await run();
+    mongoose.connection.close();
+});
