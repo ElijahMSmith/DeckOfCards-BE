@@ -5,7 +5,6 @@
     "main": "src/build/index.js",
     "scripts": {
         "build": "tsc --build --clean && tsc",
-        "build:prod": "npm install && npm run build",
         "start:dev": "nodemon src/build/index.js",
         "start": "node src/build/index.js",
         "genReplay": "node src/build/functions/createDummyReplay.js",
