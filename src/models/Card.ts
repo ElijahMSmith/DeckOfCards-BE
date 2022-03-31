@@ -14,7 +14,9 @@ export class Card {
     // 14-26, N-Z, 78-90 = diamonds
     // 27-39, a-m, 97-109 = clubs
     // 40-52, n-z, 110-122 = spades
+    // +/- joker, no suit
     getSuit() {
+        if (this.value === '+' || this.value === '-') return 'No Suit';
         const code = this.value.charCodeAt(0);
         if (code >= 110) return 'Spades';
         else if (code >= 97) return 'Clubs';
@@ -24,6 +26,7 @@ export class Card {
 
     // Ace = 1, 2, 3, ..., 10, Jack = 11, Queen = 12, King = 13
     getNumericVal() {
+        if (this.value === '+' || this.value === '-') return 0;
         const code = this.value.charCodeAt(0);
         const fromZero = (code >= 97 ? code - 6 : code) - 65;
         return (fromZero % 13) + 1;
