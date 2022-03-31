@@ -8,6 +8,7 @@ import { Rules } from './models/Rules';
 
 interface ISocket extends Socket {
     playerID?: string;
+    username?: string;
     token?: string;
 }
 
@@ -24,8 +25,6 @@ export default (server: httpServer) => {
 
     const activeGames = new HashMap();
 
-    io.engine.on('connection_error', (err) => console.log(err));
-
     io.use((socket: ISocket, next) => {
         try {
             const data = verify(
@@ -34,6 +33,7 @@ export default (server: httpServer) => {
             ) as JwtPayload;
             socket.playerID = data._id;
             socket.token = socket.handshake.auth.token;
+            socket.username = socket.handshake.auth.username;
             next();
         } catch (error) {
             next(new Error('Authentication error'));
@@ -73,17 +73,27 @@ export default (server: httpServer) => {
         });
 
         // Create a new game with the submitted rules, choosing an unused code
-        socket.on('create', (rules: Rules, callback) => {
+        socket.on('create', async (rules: Rules, callback) => {
             console.log({ event: 'create', rules, callback });
             let code: string;
             do {
                 code = Math.floor(Math.random() * 1000000).toString();
             } while (activeGames.has(code));
             const newGame = new Game(rules);
-            activeGames.set(code, newGame);
 
+            const playerObj = newGame.playerState[1 - 1];
+            playerObj.username = socket.username;
+            playerObj._id = socket.playerID;
+            newGame.playerLog[1 - 1].allIDs.push(socket.playerID);
+
+            activeGames.set(code, newGame);
             socket.join(code);
-            callback({ code, currentState: newGame.getCurrentState() });
+            await newGame.performAction(`J1  `);
+            callback({
+                code,
+                playerNumber: 1,
+                currentState: newGame.getCurrentState(),
+            });
         });
 
         socket.on('joinGame', async (code: string, callback) => {
@@ -106,7 +116,11 @@ export default (server: httpServer) => {
                 return;
             }
 
+            const playerObj = joiningGame.playerState[insertNum - 1];
+            playerObj.username = socket.username;
+            playerObj._id = socket.playerID;
             joiningGame.playerLog[insertNum - 1].allIDs.push(pid);
+
             const stateForOtherPlayers = await joiningGame.performAction(
                 `J${insertNum}  `
             );

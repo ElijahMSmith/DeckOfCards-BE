@@ -1,30 +1,56 @@
-import io from 'socket.io-client';
 import dotenv = require('dotenv');
-import { Socket } from 'socket.io';
-import { DefaultEventsMap } from '@socket.io/component-emitter';
-import { ReturnState } from '../models/ReturnState';
+import assert from 'assert';
+import { newSocket, printClean } from '../functions/utility';
 
 dotenv.config();
 
-const socketConnections = [];
-socketConnections[0] = io('http://localhost:8080', {
+const conns = [];
+/*
+const socket = io('http://localhost:8080', {
     auth: {
         token: process.env.TESTING_TOKEN,
     },
 });
+*/
 
 describe('Game creation tests', function () {
-    beforeEach('Establish new connection', function () {
-        for (let indvSocket of socketConnections) {
-            indvSocket.disconnect();
-            indvSocket.connect();
+    afterEach('Clear all connections', function () {
+        console.log('Cleaning up test');
+        while (conns.length !== 0) {
+            conns.pop().disconnect();
         }
     });
 
     it('Create new instance with no rules set', function (done) {
-        const socket = socketConnections[0];
-        socket.emit('create', {}, (response: ReturnState) => {
-            console.log(JSON.stringify(response, null, 4));
+        const socket = newSocket(1);
+        socket.emit('create', {}, (response: any) => {
+            assert.notEqual(response, null);
+            assert.equal(response.error, null);
+
+            const state = response.currentState;
+
+            printClean(state);
+
+            assert.equal(state.currentDealer, 1);
+            assert.equal(state.terminated, false);
+
+            const set = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            for (let i = 0; i < 52; i++) {
+                const val = set.charAt(i);
+                const deck = state.deck.contents;
+                let foundOne = false;
+                for (let card of deck) {
+                    if (card.value === val) {
+                        foundOne = true;
+                        break;
+                    }
+                }
+                if (!foundOne) assert.fail('Card value ' + i + ' not in deck');
+            }
+
+            assert.equal(state.faceUp.contents.length, 0);
+            assert.equal(state.discard.contents.length, 0);
+
             done();
         });
     });

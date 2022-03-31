@@ -22,7 +22,7 @@ export class Card {
         else return 'Hearts';
     }
 
-    // Ace = 1, 2, 3, ..., 10, Jack = 11, ...
+    // Ace = 1, 2, 3, ..., 10, Jack = 11, Queen = 12, King = 13
     getNumericVal() {
         const code = this.value.charCodeAt(0);
         const fromZero = (code >= 97 ? code - 6 : code) - 65;

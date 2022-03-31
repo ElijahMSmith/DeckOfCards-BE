@@ -35,9 +35,8 @@ export class PlayerLogData {
 }
 
 export class Game {
-    started: boolean = false;
     rules: Rules;
-    currentDealer: number;
+    currentDealer: number = 1;
 
     deck: Pile;
     faceUp: Pile;
@@ -45,14 +44,14 @@ export class Game {
 
     playerState: Player[];
 
-    actionLog: string;
+    actionLog: string = '';
     playerLog: PlayerLogData[];
     deckArrangementLog: string[] = [];
 
     blacklistedPlayers = [];
 
     constructor(rules: Rules) {
-        this.rules = rules;
+        this.rules = rules ?? new Rules();
 
         this.deck = new Pile(PileID.DECK);
         this.faceUp = new Pile(PileID.FACEUP, true);
@@ -124,7 +123,11 @@ export class Game {
     }
 
     async performAction(action: string): Promise<ReturnState> {
+        console.log('Action performed: "' + action + '"');
+        this.actionLog += action;
         const args = action.split('');
+
+        let returnState: ReturnState;
 
         switch (args[0].toUpperCase()) {
             case Action.PLAY:
@@ -148,9 +151,7 @@ export class Game {
             case Action.RESET:
                 return this.resetGame();
             case Action.TERMINATE:
-                return this.terminateGame();
-            default:
-                return null;
+                return await this.terminateGame();
         }
     }
 
@@ -285,26 +286,12 @@ export class Game {
     // This action should be performed by the server
     // The server receives the socket connection and logs the uuid to the first vacant position
     // This function updates the player object for that respective position
-    async playerJoin(args: string[]): Promise<ReturnState> {
+    playerJoin(args: string[]): ReturnState {
         const playerNum = parseInt(args[1]);
-
         const playerObj = this.playerState[playerNum - 1];
-        const positionIDLog = this.playerLog[playerNum - 1].allIDs;
-        const playerID = positionIDLog[positionIDLog.length - 1];
-
-        try {
-            // Get the player's username here
-            const user = await User.findOne({
-                _id: playerID,
-            }).exec();
-            playerObj._id = playerID;
-            playerObj.username = user.username;
-            return {
-                [`player${playerNum}`]: playerObj,
-            };
-        } catch (error) {
-            return null;
-        }
+        return {
+            [`player${playerNum}`]: playerObj,
+        };
     }
 
     playerLeave(args: string[]): ReturnState {
@@ -444,29 +431,34 @@ export class Game {
             this.rules
         );
 
+        console.log(replayObj);
         const replayDoc = new Replay(replayObj, true);
         await replayDoc.save();
         const replayID = replayDoc._id;
 
         for (let pnum = 1; pnum <= 8; pnum++) {
-            const allIDs = this.playerLog[pnum].allIDs;
+            const allIDs = this.playerLog[pnum - 1].allIDs;
             for (let pid of allIDs) {
                 try {
                     User.findOne({
                         _id: pid,
-                    }).exec((err, user) => {
-                        if (err)
+                    }).exec(function (err, user) {
+                        if (err) {
                             console.log(
                                 'Could not save replay to user document\n' + err
                             );
+                        } else {
+                            const userReplays = user.replays;
 
-                        const userReplays = user.replays;
+                            if (userReplays.length >= 5)
+                                userReplays.splice(
+                                    0,
+                                    userReplays.length - 5 + 1
+                                );
 
-                        if (userReplays.length >= 5)
-                            userReplays.splice(0, userReplays.length - 5 + 1);
-
-                        userReplays.push(replayID); // Add to end
-                        user.save();
+                            userReplays.push(replayID); // Add to end
+                            user.save();
+                        }
                     });
                 } catch (error) {
                     console.log(
