@@ -1,20 +1,24 @@
 import { io } from 'socket.io-client';
 
-export function newSocket(playerNum: number) {
+export function newSocket(userNum: number) {
     return io('http://localhost:8080', {
         auth: {
             token:
-                playerNum == 1
+                userNum === 1
                     ? process.env.TESTING_TOKEN_1
-                    : playerNum == 2
+                    : userNum === 2
                     ? process.env.TESTING_TOKEN_2
-                    : process.env.TESTING_TOKEN_3,
+                    : userNum === 3
+                    ? process.env.TESTING_TOKEN_3
+                    : process.env.TESTING_TOKEN_4,
             username:
-                playerNum == 1
+                userNum === 1
                     ? process.env.TESTING_USERNAME_1
-                    : playerNum == 2
+                    : userNum === 2
                     ? process.env.TESTING_USERNAME_2
-                    : process.env.TESTING_USERNAME_3,
+                    : userNum === 3
+                    ? process.env.TESTING_USERNAME_3
+                    : process.env.TESTING_USERNAME_4,
         },
     });
 }

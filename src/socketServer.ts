@@ -75,9 +75,12 @@ export default (server: httpServer) => {
         // Create a new game with the submitted rules, choosing an unused code
         socket.on('create', async (rules: Rules, callback) => {
             console.log({ event: 'create', rules, callback });
+            let build = [];
             let code: string;
             do {
-                code = Math.floor(Math.random() * 1000000).toString();
+                for (let i = 0; i < 6; i++)
+                    build.push(Math.floor(Math.random() * 10));
+                code = build.join('');
             } while (activeGames.has(code));
             const newGame = new Game(rules);
 
@@ -96,7 +99,7 @@ export default (server: httpServer) => {
             });
         });
 
-        socket.on('joinGame', async (code: string, callback) => {
+        socket.on('join', async (code: string, callback) => {
             console.log({ event: 'joinGame', code });
             const joiningGame: Game = <Game>activeGames.get(code);
             if (!joiningGame) {

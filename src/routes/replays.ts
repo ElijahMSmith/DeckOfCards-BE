@@ -1,4 +1,6 @@
+import { verify } from 'jsonwebtoken';
 import Replay from '../models/Replay';
+import User from '../models/User';
 import verifyToken from './verifyToken';
 const router = require('express').Router();
 
@@ -35,6 +37,16 @@ router.get('/retrieve', verifyToken, async (req, res) => {
         }
 
         res.status(200).send(rep);
+    });
+});
+
+router.post('/clear', verifyToken, async (req, res) => {
+    Replay.deleteMany({}, (err) => {
+        if (err) return res.status(400).send({ error: err });
+        User.updateMany({}, { replays: [] }, (err) => {
+            if (err) return res.status(400).send({ error: err });
+            return res.status(200).send();
+        });
     });
 });
 

@@ -4,7 +4,6 @@ import jwt = require('jsonwebtoken');
 const verifyToken = async (req, res, next) => {
     // Strip and verify the token submitted
     let data: any, token: string;
-    console.log('Secret: ' + process.env.JWT_SECRET);
     try {
         token = req.header('Authorization').replace('Bearer ', '');
         data = jwt.verify(token, process.env.JWT_SECRET);

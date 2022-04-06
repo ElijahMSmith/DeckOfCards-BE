@@ -74,6 +74,11 @@ export class Game {
             for (let i = 110; i <= 122; i++)
                 this.deck.insertCard(new Card(String.fromCharCode(i)));
 
+        if (rules.jokersEnabled) {
+            this.deck.insertCard(new Card('+'));
+            this.deck.insertCard(new Card('-'));
+        }
+
         this.deck.shuffle();
         this.deckArrangementLog.push(this.deck.toString());
 
@@ -431,7 +436,6 @@ export class Game {
             this.rules
         );
 
-        console.log(replayObj);
         const replayDoc = new Replay(replayObj, true);
         await replayDoc.save();
         const replayID = replayDoc._id;
@@ -457,7 +461,7 @@ export class Game {
                                 );
 
                             userReplays.push(replayID); // Add to end
-                            user.save();
+                            user.update();
                         }
                     });
                 } catch (error) {
