@@ -8,8 +8,7 @@
         "start:dev": "nodemon src/build/index.js",
         "start": "node src/build/index.js",
         "genReplay": "node src/build/functions/createDummyReplay.js",
-        "testSocket": "node src/build/functions/socketTests/socketTesting.js",
-        "test": "npm run build && mocha src/build/tests"
+        "test": "npm run build && mocha src/build/tests/createGame.test.js"
     },
     "repository": {
         "type": "git",
