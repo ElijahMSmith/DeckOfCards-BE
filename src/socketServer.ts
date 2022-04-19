@@ -91,6 +91,7 @@ export default (server: httpServer) => {
 
             activeGames.set(code, newGame);
             socket.join(code);
+
             await newGame.performAction(`J1  `);
             callback({
                 code,
@@ -100,7 +101,7 @@ export default (server: httpServer) => {
         });
 
         socket.on('join', async (code: string, callback) => {
-            console.log({ event: 'joinGame', code });
+            console.log({ event: 'join', code });
             const joiningGame: Game = <Game>activeGames.get(code);
             if (!joiningGame) {
                 callback({ error: 'Invalid game code!' });
@@ -129,8 +130,8 @@ export default (server: httpServer) => {
             );
 
             socket.to(code).emit('update', stateForOtherPlayers);
-
             socket.join(code);
+
             callback({
                 currentState: joiningGame.getCurrentState(),
                 playerNumber: insertNum,
@@ -138,7 +139,7 @@ export default (server: httpServer) => {
         });
 
         socket.on('action', async (code: string, action: string, callback) => {
-            console.log({ event: 'Action', code, action });
+            console.log({ event: 'Action', code, action, callback });
             const game = <Game>activeGames.get(code);
             if (!game) {
                 callback({ error: 'This game does not exist!' });
@@ -159,8 +160,10 @@ export default (server: httpServer) => {
                 io.socketsLeave(code);
                 activeGames.delete(code);
             }
+
+            callback({});
         });
 
-        socket.on('clearForTests', () => activeGames.clear);
+        socket.on('clearForTests', () => activeGames.clear());
     });
 };

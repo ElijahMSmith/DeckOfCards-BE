@@ -1,8 +1,10 @@
 // Socket server
 import startSocketServer from './socketServer';
 import express from 'express';
+import cors from 'cors';
 
 const app = express();
+app.use(cors());
 
 // Import routes
 import authRoutes from './routes/auth';

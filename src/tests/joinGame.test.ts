@@ -49,4 +49,36 @@ describe('Join game tests', function () {
             });
         });
     });
+
+    it('A joining player is placed at the highest available open slot', function (done) {
+        const socket1 = newSocket(1);
+        const socket2 = newSocket(2);
+        const socket3 = newSocket(3);
+        const socket4 = newSocket(4);
+
+        socket1.emit('create', {}, (response: any) => {
+            assert.notEqual(response, null);
+            assert.equal(response.error, null);
+            const code = response.code;
+
+            socket2.emit('join', code, (returnState2: any) => {
+                assert.equal(returnState2.error, undefined);
+                socket3.emit('join', code, (returnState3: any) => {
+                    assert.equal(returnState3.error, undefined);
+                    socket2.disconnect();
+                    setTimeout(() => {
+                        socket4.emit('join', code, (returnState4: any) => {
+                            assert.equal(returnState4.error, undefined);
+                            assert.equal(returnState4.playerNumber, 2);
+                            assert.equal(
+                                returnState4.currentState.player2.username,
+                                process.env.TESTING_USERNAME_4
+                            );
+                            done();
+                        });
+                    }, 500);
+                });
+            });
+        });
+    });
 });
