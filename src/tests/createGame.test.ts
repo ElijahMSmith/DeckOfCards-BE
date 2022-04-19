@@ -70,6 +70,7 @@ describe('Game creation tests', function () {
                 assert.notEqual(response.code, null);
 
                 const state = response.currentState;
+                console.log(state);
 
                 assert.equal(state.currentDealer, 1);
                 assert.equal(state.terminated, false);

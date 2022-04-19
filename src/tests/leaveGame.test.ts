@@ -61,13 +61,73 @@ describe('Leave game tests', function () {
                     assert.strictEqual(terminated2, true);
                     assert.strictEqual(terminated3, true);
                     assert.strictEqual(terminated4, true);
-
-                    socket2.disconnect();
-                    socket3.disconnect();
-                    socket4.disconnect();
                     done();
                 }, 500);
             }, 500);
+        });
+    });
+
+    it('A player leaving clears their data from the player', function (done) {
+        const socket1 = newSocket(1);
+        const socket2 = newSocket(2);
+
+        socket1.emit('create', {}, (response: any) => {
+            assert.notEqual(response, null);
+            assert.equal(response.error, null);
+
+            const code = response.code;
+            let counter = 0;
+
+            socket1.on('update', (returnState) => {
+                if (counter === 0) {
+                    assert.equal(returnState.error, undefined);
+                    assert.equal(
+                        returnState.player2.username,
+                        process.env.TESTING_USERNAME_2
+                    );
+                    assert.notEqual(returnState.player2._id, null);
+                    counter++;
+                } else {
+                    assert.equal(returnState.error, null);
+                    assert.equal(returnState.player2.username, null);
+                    assert.equal(returnState.player2._id, null);
+                    done();
+                }
+            });
+
+            socket2.emit('join', code, (returnState: any) => {
+                assert.equal(returnState.error, undefined);
+
+                setTimeout(() => {
+                    socket2.disconnect();
+                }, 500);
+            });
+        });
+    });
+
+    it('A kicked player cannot rejoin', function (done) {
+        const socket1 = newSocket(1);
+        const socket2 = newSocket(2);
+
+        socket1.emit('create', {}, (response: any) => {
+            assert.notEqual(response, null);
+            assert.equal(response.error, null);
+            const code = response.code;
+
+            socket2.emit('join', code, (returnState: any) => {
+                assert.equal(returnState.error, undefined);
+
+                socket1.emit('action', code, 'L2K ', (returnState2: any) => {
+                    assert.equal(returnState2.error, undefined);
+                    socket2.emit('join', code, (returnState3: any) => {
+                        assert.equal(
+                            returnState3.error,
+                            "You're not allowed to join that game!"
+                        );
+                        done();
+                    });
+                });
+            });
         });
     });
 });

@@ -351,19 +351,23 @@ export class Game {
         // 0 for all, or 1-8
         const toPlayer = parseInt(args[2]);
         // deal as many cards <= numCards as the deck has
-        const numCards = parseInt(args[3]);
+        let numCards = parseInt(args[3]);
 
         if (dealingPlayer !== this.currentDealer) return null;
 
         if (toPlayer === 0) {
             // All players
             let pnum = this.currentDealer;
-            while (this.deck.size() !== 0) {
+            const origPnum = pnum;
+            while (this.deck.size() !== 0 && numCards > 0) {
                 const topCard = this.deck.removeFromTop();
 
                 do {
                     ++pnum;
                     if (pnum > 8) pnum = 1;
+
+                    // When we get through all players, we've dealt one of the numCards to each
+                    if (pnum === origPnum) numCards--;
                 } while (
                     this.playerState[pnum - 1].vacant() &&
                     !(this.rules.excludeDealer && this.currentDealer === pnum)
@@ -377,9 +381,10 @@ export class Game {
         } else {
             // Single player
             const playerObj = this.playerState[toPlayer - 1];
-            while (this.deck.size() !== 0) {
+            while (this.deck.size() !== 0 && numCards > 0) {
                 const topCard = this.deck.removeFromTop();
                 playerObj.receiveCard(topCard);
+                numCards--;
             }
 
             returnObj[`player${toPlayer}`] = this.playerState[toPlayer - 1];
