@@ -8,6 +8,7 @@ export class Pile extends CardSet {
     constructor(pileID: string, faceUp: boolean = false) {
         super();
         if (faceUp) this.revealAll();
+        this.faceUp = faceUp;
         this.pileID = pileID;
     }
 

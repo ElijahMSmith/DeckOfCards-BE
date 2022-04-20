@@ -56,7 +56,7 @@ export class Game {
     constructor(rules: Rules) {
         this.rules = rules ?? new Rules();
 
-        this.deck = new Pile(PileID.DECK);
+        this.deck = new Pile(PileID.DECK, false);
         this.faceUp = new Pile(PileID.FACEUP, true);
         this.discard = new Pile(PileID.DISCARD, true);
 

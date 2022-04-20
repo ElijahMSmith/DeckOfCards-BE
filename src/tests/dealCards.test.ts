@@ -4,7 +4,7 @@ import { newSocket, printClean } from '../functions/utility';
 
 dotenv.config();
 
-describe('Change Dealer Tests', function () {
+describe('Deal Cards Tests', function () {
     this.timeout(4000);
 
     it('Dealing to all players will give an equal number of cards to each if enough cards exist', function (done) {
