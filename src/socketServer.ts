@@ -48,15 +48,20 @@ export default (server: httpServer) => {
                 // Might not be a game room, since all sockets connect to a room with their own ID
                 const game = <Game>activeGames.get(room);
                 if (game) {
-                    const returnState = await game.performAction(
-                        `L${game.getPlayerPositionByID(socket.playerID)}  `
+                    const playerNum = game.getPlayerPositionByID(
+                        socket.playerID
                     );
+                    if (playerNum !== -1) {
+                        const returnState = await game.performAction(
+                            `L${game.getPlayerPositionByID(socket.playerID)}  `
+                        );
 
-                    socket.to(room).emit('update', returnState);
+                        socket.to(room).emit('update', returnState);
 
-                    if (returnState.terminated) {
-                        io.socketsLeave(room);
-                        activeGames.delete(room);
+                        if (returnState.terminated) {
+                            io.socketsLeave(room);
+                            activeGames.delete(room);
+                        }
                     }
                 }
             }
@@ -93,30 +98,48 @@ export default (server: httpServer) => {
             socket.join(code);
 
             await newGame.performAction(`J1  `);
-            callback({
-                code,
-                playerNumber: 1,
-                currentState: newGame.getCurrentState(),
-            });
+            if (!callback)
+                console.error('No callback provided to create event.');
+            else
+                callback({
+                    code,
+                    playerNumber: 1,
+                    currentState: newGame.getCurrentState(),
+                });
         });
 
         socket.on('join', async (code: string, callback) => {
             console.log({ event: 'join', code });
             const joiningGame: Game = <Game>activeGames.get(code);
             if (!joiningGame) {
-                callback({ error: 'Invalid game code!' });
+                if (!callback)
+                    console.error(
+                        'No callback provided to join event - invalid game code'
+                    );
+                else callback({ error: 'Invalid game code!' });
                 return;
             }
 
             const pid = socket.playerID;
             if (joiningGame.blacklistedPlayers.indexOf(pid) !== -1) {
-                callback({ error: "You're not allowed to join that game!" });
+                if (!callback)
+                    console.error(
+                        'No callback provided to join event - blacklisted player'
+                    );
+                else
+                    callback({
+                        error: "You're not allowed to join that game!",
+                    });
                 return;
             }
 
             const insertNum = joiningGame.firstOpenPosition();
             if (insertNum === -1) {
-                callback({ error: 'That game is already full!' });
+                if (!callback)
+                    console.error(
+                        'No callback provided to join event - game already full'
+                    );
+                else callback({ error: 'That game is already full!' });
                 return;
             }
 
@@ -132,36 +155,55 @@ export default (server: httpServer) => {
             socket.to(code).emit('update', stateForOtherPlayers);
             socket.join(code);
 
-            callback({
-                currentState: joiningGame.getCurrentState(),
-                playerNumber: insertNum,
-            });
+            if (!callback)
+                console.error(
+                    'No callback provided to join event - successful join'
+                );
+            else
+                callback({
+                    currentState: joiningGame.getCurrentState(),
+                    playerNumber: insertNum,
+                });
         });
 
         socket.on('action', async (code: string, action: string, callback) => {
             console.log({ event: 'Action', code, action, callback });
             const game = <Game>activeGames.get(code);
             if (!game) {
-                callback({ error: 'This game does not exist!' });
+                if (!callback)
+                    console.error(
+                        'No callback provided to action event - invalid game code'
+                    );
+                else callback({ error: 'This game does not exist!' });
                 return;
             }
 
             const pnum = game.getPlayerPositionByID(socket.playerID);
             if (pnum === -1) {
-                callback({ error: "You haven't joined this game!" });
+                if (!callback)
+                    console.error(
+                        'No callback provided to action event - not part of game'
+                    );
+                else callback({ error: "You haven't joined this game!" });
                 return;
             }
 
             const returnState = await game.performAction(action);
-            io.to(code).emit('update', returnState);
+            if (returnState) {
+                io.to(code).emit('update', returnState);
 
-            // Make all Socket instances leave the room, which closes it
-            if (returnState.terminated) {
-                io.socketsLeave(code);
-                activeGames.delete(code);
+                // Make all Socket instances leave the room, which closes it
+                if (returnState.terminated) {
+                    io.socketsLeave(code);
+                    activeGames.delete(code);
+                }
             }
 
-            callback({});
+            if (!callback)
+                console.error(
+                    'No callback provided to action event - played successfully'
+                );
+            else callback({});
         });
 
         socket.on('clearForTests', () => activeGames.clear());

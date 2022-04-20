@@ -22,6 +22,7 @@ describe('Absorb Cards Tests', function () {
                 const p2Cards = [];
                 socket2.on('update', (returnState) => {
                     assert.equal(returnState.error, undefined);
+                    printClean(returnState);
                     if (count === 0) {
                         // Dealt out 5 cards to each player
                         assert.equal(
@@ -54,7 +55,7 @@ describe('Absorb Cards Tests', function () {
                     }
                 });
 
-                socket1.emit('action', code, 'G105', (err: any) =>
+                socket1.emit('action', code, 'G005', (err: any) =>
                     assert.equal(err.error, undefined)
                 );
 
@@ -116,7 +117,7 @@ describe('Absorb Cards Tests', function () {
                     }
                 });
 
-                socket1.emit('action', code, 'G105', (err: any) =>
+                socket1.emit('action', code, 'G005', (err: any) =>
                     assert.equal(err.error, undefined)
                 );
 

@@ -7,6 +7,7 @@ import { ReturnState } from './ReturnState';
 import { CardSet } from './CardSet';
 import User from './User';
 import Replay from './Replay';
+import { printClean } from '../functions/utility';
 
 enum PileID {
     DECK = 'F',
@@ -49,6 +50,8 @@ export class Game {
     deckArrangementLog: string[] = [];
 
     blacklistedPlayers = [];
+
+    numPlayers = 0;
 
     constructor(rules: Rules) {
         this.rules = rules ?? new Rules();
@@ -294,6 +297,8 @@ export class Game {
     playerJoin(args: string[]): ReturnState {
         const playerNum = parseInt(args[1]);
         const playerObj = this.playerState[playerNum - 1];
+        this.numPlayers++;
+
         return {
             [`player${playerNum}`]: playerObj,
         };
@@ -319,6 +324,8 @@ export class Game {
             for (; i <= 8; i++) if (!this.playerState[i - 1].vacant()) break;
             returnObj.currentDealer = this.currentDealer = i;
         }
+
+        this.numPlayers--;
 
         // Terminate the game is the game owner leaves
         if (playerNum === 1) {
@@ -346,34 +353,36 @@ export class Game {
     dealCards(args: string[]): ReturnState {
         const returnObj: ReturnState = {};
 
-        // 1-8, verify it's the correct dealer
-        const dealingPlayer = parseInt(args[1]);
         // 0 for all, or 1-8
-        const toPlayer = parseInt(args[2]);
+        const toPlayer = parseInt(args[1]);
         // deal as many cards <= numCards as the deck has
-        let numCards = parseInt(args[3]);
+        let numCards = parseInt(args[2] + args[3]);
 
-        if (dealingPlayer !== this.currentDealer) return null;
+        if (numCards == NaN) return null;
+        if (this.rules.excludeDealer && this.numPlayers === 1) return null;
 
         if (toPlayer === 0) {
             // All players
             let pnum = this.currentDealer;
-            const origPnum = pnum;
+            numCards *= this.numPlayers - (this.rules.excludeDealer ? 1 : 0);
+
             while (this.deck.size() !== 0 && numCards > 0) {
-                const topCard = this.deck.removeFromTop();
+                // Go to next player
+                pnum++;
+                if (pnum > 8) pnum = 1;
 
-                do {
-                    ++pnum;
-                    if (pnum > 8) pnum = 1;
+                // If that slot is empty or is the dealer who should be excluded, skip them
+                if (
+                    this.playerState[pnum - 1].vacant() ||
+                    (this.rules.excludeDealer && this.currentDealer === pnum)
+                )
+                    continue;
 
-                    // When we get through all players, we've dealt one of the numCards to each
-                    if (pnum === origPnum) numCards--;
-                } while (
-                    this.playerState[pnum - 1].vacant() &&
-                    !(this.rules.excludeDealer && this.currentDealer === pnum)
+                // Otherwise, give them the top card in the deck
+                this.playerState[pnum - 1].receiveCard(
+                    this.deck.removeFromTop()
                 );
-
-                this.playerState[pnum - 1].receiveCard(topCard);
+                numCards--;
             }
 
             for (let i = 1; i <= 8; i++)
