@@ -35,6 +35,16 @@ export class CardSet {
         return -1;
     }
 
+    // toToggle = char (value)
+    // returns whether the card was found or not
+    toggleCard(toToggle: string): boolean {
+        const index = this.indexOf(toToggle);
+        if (index === -1) return false;
+
+        this.contents[index].toggleShowing();
+        return true;
+    }
+
     // toReveal = char (value)
     // returns whether the card was found or not
     revealCard(toReveal: string): boolean {
@@ -45,6 +55,8 @@ export class CardSet {
         return true;
     }
 
+    // toHide = char (value)
+    // returns whether the card was found or not
     hideCard(toHide: string): boolean {
         const index = this.indexOf(toHide);
         if (index === -1) return false;

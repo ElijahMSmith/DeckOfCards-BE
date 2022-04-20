@@ -20,7 +20,7 @@ enum PileID {
 enum Action {
     DRAW = 'D',
     PLAY = 'P',
-    REVEAL = 'F',
+    FLIP = 'F',
     SHUFFLE = 'S',
     JOIN = 'J',
     LEAVE = 'L',
@@ -135,15 +135,13 @@ export class Game {
         this.actionLog += action;
         const args = action.split('');
 
-        let returnState: ReturnState;
-
         switch (args[0].toUpperCase()) {
             case Action.PLAY:
                 return this.playCard(args);
             case Action.DRAW:
                 return this.drawCard(args);
-            case Action.REVEAL:
-                return this.revealCard(args);
+            case Action.FLIP:
+                return this.flipCard(args);
             case Action.SHUFFLE:
                 return this.shuffleCards(args);
             case Action.JOIN:
@@ -161,6 +159,7 @@ export class Game {
             case Action.TERMINATE:
                 return await this.terminateGame();
         }
+        return null;
     }
 
     playCard(args: string[]): ReturnState {
@@ -183,39 +182,70 @@ export class Game {
             destSet = destPlayerObj.hand;
             returnObj[`player${destPlayerNum}`] = destPlayerObj;
         } else {
+            console.log('Switching ' + destinationID);
+            printClean(playerObj);
             switch (destinationID) {
                 case PileID.DECK:
+                    console.log('Deck');
                     destSet = this.deck;
                     returnObj.deck = this.deck;
                     showing = false;
+                    break;
                 case PileID.FACEUP:
+                    console.log('FaceUp');
                     destSet = this.faceUp;
                     returnObj.faceUp = this.faceUp;
                     showing = true;
+                    break;
                 case PileID.DISCARD:
+                    console.log('Discard');
                     destSet = this.discard;
                     returnObj.discard = this.discard;
                     showing = true;
+                    break;
                 case PileID.HAND:
+                    console.log('Hand');
                     destSet = playerObj.hand;
+                    break;
                 case PileID.TABLE:
+                    console.log('Table');
                     destSet = playerObj.table;
+                    break;
             }
         }
 
+        console.log(
+            destinationID,
+            ' = ',
+            PileID.HAND,
+            ' ? ',
+            destinationID === PileID.HAND
+        );
+
+        console.log('Before removing: ');
+        printClean(playerObj);
+        console.log('Playing to (pre-removed version of pile if same): ');
+        printClean(destSet);
+
         const card = playerObj.removeCard(cardID);
         if (!card) return null;
+
+        console.log(card.value);
+        console.log('After removing: ');
+        printClean(playerObj);
 
         // If playing to the table, hide it if rule tells us to
         // Otherwise, only show if card is already showing
         if (destinationID === PileID.TABLE) {
             if (this.rules.playFacedDown) showing = false;
             else showing = card.revealed;
-        }
-
-        returnObj[`player${playerNum}`] = playerObj;
+        } else if (destinationID === PileID.HAND) showing = card.revealed;
 
         destSet.insertCard(card, showing);
+        returnObj[`player${playerNum}`] = playerObj;
+
+        console.log('After inserting: ');
+        printClean(playerObj);
 
         return returnObj;
     }
@@ -262,14 +292,14 @@ export class Game {
         return returnObj;
     }
 
-    revealCard(args: string[]): ReturnState {
+    flipCard(args: string[]): ReturnState {
         const playerNum = parseInt(args[1]);
         const cardID = args[2];
 
         const playerObj = this.playerState[playerNum - 1];
 
-        let found = playerObj.hand.revealCard(cardID);
-        if (!found) found = playerObj.table.revealCard(cardID);
+        let found = playerObj.hand.toggleCard(cardID);
+        if (!found) found = playerObj.table.toggleCard(cardID);
         if (!found) return null;
 
         return {
