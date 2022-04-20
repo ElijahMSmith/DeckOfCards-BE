@@ -6,7 +6,7 @@
     "scripts": {
         "build": "tsc --build --clean && tsc",
         "start:dev": "nodemon src/build/index.js",
-        "start": "npm run build && node src/build/index.js",
+        "start": "node src/build/index.js",
         "genReplay": "npm run build && node src/build/functions/createDummyReplay.js",
         "testAll": "npm run build && mocha src/build/tests",
         "test": "npm run build && mocha src/build/tests/drawCard.test.js",
