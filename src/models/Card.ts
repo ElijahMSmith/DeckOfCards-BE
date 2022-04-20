@@ -40,6 +40,10 @@ export class Card {
         this.revealed = true;
     }
 
+    toggleShowing() {
+        this.revealed = !this.revealed;
+    }
+
     toString() {
         if (this.value === '+') return 'Joker 1';
         else if (this.value === '-') return 'Joker 2';

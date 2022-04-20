@@ -10,8 +10,8 @@
         "genReplay": "npm run build && node src/build/functions/createDummyReplay.js",
         "testAll": "npm run build && mocha src/build/tests",
         "testAllnb": "mocha src/build/tests",
-        "test": "npm run build && mocha src/build/tests/absorbCards.test.js",
-        "testnb": "mocha src/build/tests/absorbCards.test.js",
+        "test": "npm run build && mocha src/build/tests/replays.test.js",
+        "testnb": "mocha src/build/tests/replays.test.js",
         "clearReplays": "npm run build && node src/build/functions/clearReplays.js"
     },
     "repository": {
@@ -44,6 +44,7 @@
         "http": "^0.0.1-security",
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.2.4",
+        "node-schedule": "^2.1.0",
         "socket.io": "^4.4.1",
         "typescript": "^4.6.2",
         "validator": "^13.7.0"

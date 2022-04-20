@@ -7,11 +7,6 @@ dotenv.config();
 describe('Reveal Cards Tests', function () {
     this.timeout(4000);
 
-    /*
-    Cards showing in hand that are played to the table are still showing
-    Cards played to the table with the faceDown rule set are hidden, even if they were originally showing
-    */
-
     it('Cards in hand and table start unrevealed, can be shown, then can be hidden again', function (done) {
         const socket1 = newSocket(1);
         const socket2 = newSocket(2);
@@ -26,15 +21,12 @@ describe('Reveal Cards Tests', function () {
                 let count = 0;
                 let cardVal0, cardVal1;
                 socket2.on('update', (returnState) => {
-                    console.log(count);
                     assert.equal(returnState.error, undefined);
                     if (count === 0) {
                         // Given two cards to hand
                         assert.notEqual(returnState.player2, undefined);
-                        let cardVal0 =
-                            returnState.player2.hand.contents[0].value;
-                        let cardVal1 =
-                            returnState.player2.hand.contents[1].value;
+                        cardVal0 = returnState.player2.hand.contents[0].value;
+                        cardVal1 = returnState.player2.hand.contents[1].value;
                         count++;
                         socket2.emit(
                             'action',
@@ -145,6 +137,206 @@ describe('Reveal Cards Tests', function () {
                 });
 
                 socket2.emit('action', code, 'G202', (err: any) => {
+                    assert.equal(err.error, undefined);
+                });
+            });
+        });
+    });
+
+    it('Cards showing in hand that are played to the table, and vice versa, are still showing with no rule set', function (done) {
+        const socket1 = newSocket(1);
+        const socket2 = newSocket(2);
+
+        socket1.emit('create', {}, (response: any) => {
+            assert.equal(response.error, null);
+            const code = response.code;
+
+            socket2.emit('join', code, (response2: any) => {
+                assert.equal(response2.error, null);
+
+                let count = 0;
+                let cardVal;
+                socket2.on('update', (returnState) => {
+                    assert.equal(returnState.error, undefined);
+
+                    if (count === 0) {
+                        // Given one card to hand
+                        assert.notEqual(returnState.player2, undefined);
+                        cardVal = returnState.player2.hand.contents[0].value;
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `F2${cardVal} `,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 1) {
+                        // Hand card flipped
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, true);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `P2${cardVal}T`,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 2) {
+                        // Played to table
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.table.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, true);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `P2${cardVal}H`,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 3) {
+                        // Player to hand
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, true);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `F2${cardVal} `,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 4) {
+                        // Hidden hand card
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, false);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `P2${cardVal}T`,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count == 5) {
+                        // Played to table
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.table.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, false);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `P2${cardVal}H`,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else {
+                        // Played to hand
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, false);
+                        done();
+                    }
+                });
+
+                socket2.emit('action', code, 'G201', (err: any) => {
+                    assert.equal(err.error, undefined);
+                });
+            });
+        });
+    });
+
+    it('Cards played to the table with the faceDown rule set are hidden, even if they were originally showing', function (done) {
+        const socket1 = newSocket(1);
+        const socket2 = newSocket(2);
+
+        socket1.emit('create', { playFacedDown: true }, (response: any) => {
+            assert.equal(response.error, null);
+            const code = response.code;
+
+            socket2.emit('join', code, (response2: any) => {
+                assert.equal(response2.error, null);
+
+                let count = 0;
+                let cardVal;
+                socket2.on('update', (returnState) => {
+                    assert.equal(returnState.error, undefined);
+
+                    if (count === 0) {
+                        // Given one card to hand
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.revealed, false);
+                        cardVal = card.value;
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `F2${cardVal} `,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 1) {
+                        // Hand card flipped
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.hand.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, true);
+
+                        count++;
+                        socket2.emit(
+                            'action',
+                            code,
+                            `P2${cardVal}T`,
+                            (err: any) => {
+                                assert.equal(err.error, undefined);
+                            }
+                        );
+                    } else if (count === 2) {
+                        // Played to table, should be hidden
+                        assert.notEqual(returnState.player2, undefined);
+                        const card = returnState.player2.table.contents[0];
+                        assert.notEqual(card, undefined);
+                        assert.equal(card.value, cardVal);
+                        assert.equal(card.revealed, false);
+                        done();
+                    }
+                });
+
+                socket2.emit('action', code, 'G201', (err: any) => {
                     assert.equal(err.error, undefined);
                 });
             });
