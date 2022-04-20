@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 export function newSocket(userNum: number) {
     const prod = 'https://mobiledeckofcards.azurewebsites.net';
     const local = 'http://localhost:8080';
-    const newSocket = io(local, {
+    const newSocket = io(prod, {
         auth: {
             token:
                 userNum === 1
@@ -23,6 +23,7 @@ export function newSocket(userNum: number) {
                     : process.env.TESTING_USERNAME_4,
         },
     });
+
     return newSocket;
 }
 

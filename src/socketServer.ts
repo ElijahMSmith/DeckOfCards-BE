@@ -27,6 +27,7 @@ export default (server: httpServer) => {
 
     io.use((socket: ISocket, next) => {
         try {
+            console.log('Verifying ' + socket.handshake.auth.token);
             const data = verify(
                 socket.handshake.auth.token,
                 process.env.JWT_SECRET
@@ -34,8 +35,10 @@ export default (server: httpServer) => {
             socket.playerID = data._id;
             socket.token = socket.handshake.auth.token;
             socket.username = socket.handshake.auth.username;
+            console.log('Verified!');
             next();
         } catch (error) {
+            console.error(error);
             next(new Error('Authentication error'));
         }
     }).on('connection', (socket: ISocket) => {

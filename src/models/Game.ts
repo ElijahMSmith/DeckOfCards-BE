@@ -187,6 +187,7 @@ export class Game {
                 case PileID.DECK:
                     destSet = this.deck;
                     returnObj.deck = this.deck;
+                    showing = false;
                 case PileID.FACEUP:
                     destSet = this.faceUp;
                     returnObj.faceUp = this.faceUp;
@@ -199,12 +200,18 @@ export class Game {
                     destSet = playerObj.hand;
                 case PileID.TABLE:
                     destSet = playerObj.table;
-                    showing = !this.rules.playFacedDown;
             }
         }
 
         const card = playerObj.removeCard(cardID);
         if (!card) return null;
+
+        // If playing to the table, hide it if rule tells us to
+        // Otherwise, only show if card is already showing
+        if (destinationID === PileID.TABLE) {
+            if (this.rules.playFacedDown) showing = false;
+            else showing = card.revealed;
+        }
 
         returnObj[`player${playerNum}`] = playerObj;
 
