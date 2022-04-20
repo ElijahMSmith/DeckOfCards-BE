@@ -23,7 +23,7 @@ export class Player {
     }
 
     vacant(): boolean {
-        return !this.username && !this._id;
+        return !this._id;
     }
 
     cleanUp(autoAbsorb = false): CardSet {
