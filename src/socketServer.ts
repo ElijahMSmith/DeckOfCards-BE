@@ -191,6 +191,51 @@ export default (server: httpServer) => {
                 return;
             }
 
+            if (action.charAt(0) === 'L' && action.charAt(2) === 'K') {
+                console.log('Recognized Kick Action');
+                // Player kicked from the game
+                // Grab the player's ID, then find their socket
+                // Emit a kick event to that user
+                // Remove their socket from the room with that game code
+                const kickedPlayerNum = parseInt(action.charAt(1));
+                if (kickedPlayerNum === NaN) {
+                    callback({ error: 'Kicked player number is not valid' });
+                    return;
+                }
+
+                const kickedID = game.playerState[kickedPlayerNum - 1]._id;
+
+                console.log(
+                    'Kicking player ' +
+                        kickedPlayerNum +
+                        ' with user _id ' +
+                        kickedID
+                );
+                const clients = io.sockets.adapter.rooms.get(code);
+
+                for (let clientid of clients) {
+                    const clientSocket: ISocket =
+                        io.sockets.sockets.get(clientid);
+                    console.log(
+                        'SocketID ' +
+                            clientid +
+                            ' - user _id ' +
+                            clientSocket.playerID +
+                            ' =? ' +
+                            kickedID
+                    );
+                    if (clientSocket.playerID === kickedID) {
+                        // Found
+                        console.log('Found!');
+                        io.to(clientid).emit('kicked');
+                        clientSocket.leave(code);
+                        break;
+                    }
+                }
+
+                // Still play the action below to clean up their player object
+            }
+
             const returnState = await game.performAction(action);
             if (returnState) {
                 io.to(code).emit('update', returnState);
