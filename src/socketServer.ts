@@ -237,6 +237,7 @@ export default (server: httpServer) => {
             }
 
             const returnState = await game.performAction(action);
+            console.log('Emitting to game ' + code, returnState);
             if (returnState) {
                 io.to(code).emit('update', returnState);
 

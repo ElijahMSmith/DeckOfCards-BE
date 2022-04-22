@@ -27,7 +27,8 @@ export class Player {
     }
 
     cleanUp(autoAbsorb = false): CardSet {
-        this.username = this._id = null;
+        this._id = undefined;
+        this.username = undefined;
         return autoAbsorb ? this.absorbCards() : null;
     }
 

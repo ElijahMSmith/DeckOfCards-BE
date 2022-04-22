@@ -2,15 +2,9 @@
 
 TODOS:
 
--   Test building and typescript conversion of previously-working code
--   Create some way for user to create a new game (either HTTP req or socket channel)
--   Code to manage game codes and states
--   Start working with actual socket server to get testing ready
+Still getting updates from games that have already terminated when a player leaves ANOTHER game
+Terminated games still have id of the player 1 (but not username), the rest of the fields are null
 
--   Better error handling for login/registration routes in particular, as needed by FE team
--   IF TIME ALLOWS: Run a service once per day deleting replays over 2 weeks old
--   Finish working with FE team
-
--   Try again in the future to get PM2 working
-    "pm2": "^5.2.0",
-    "start": "pm2 start index.js --no-daemon"
+Why am I still getting updates for games that I left?
+Why are those updates for games that are terminated?
+Why is there a code and a playerNum along with the playerNumber
