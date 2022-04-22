@@ -491,9 +491,12 @@ export class Game {
         await replayDoc.save();
         const replayID = replayDoc._id;
 
+        console.log('Saved replay with _id ' + replayID);
+
         for (let pnum = 1; pnum <= 8; pnum++) {
             const allIDs = this.playerLog[pnum - 1].allIDs;
             for (let pid of allIDs) {
+                console.log('Finding user with _id ' + pid);
                 try {
                     User.findOne({
                         _id: pid,
@@ -503,6 +506,7 @@ export class Game {
                                 'Could not save replay to user document\n' + err
                             );
                         } else {
+                            console.log('Found!');
                             const userReplays = user.replays;
 
                             if (userReplays.length >= 5)
@@ -512,7 +516,11 @@ export class Game {
                                 );
 
                             userReplays.push(replayID); // Add to end
-                            user.update();
+
+                            console.log('Updated replays array to be ');
+                            printClean(userReplays);
+
+                            user.save();
                         }
                     });
                 } catch (error) {
