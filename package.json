@@ -10,8 +10,8 @@
         "genReplay": "npm run build && node src/build/functions/createDummyReplay.js",
         "testAll": "npm run build && mocha src/build/tests",
         "testAllnb": "mocha src/build/tests",
-        "test": "npm run build && mocha src/build/tests/leaveGame.test.js",
-        "testnb": "mocha src/build/tests/leaveGame.test.js",
+        "test": "npm run build && mocha src/build/tests/resetGame.test.js",
+        "testnb": "mocha src/build/tests/resetGame.test.js",
         "clearReplays": "npm run build && node src/build/functions/clearReplays.js"
     },
     "repository": {
