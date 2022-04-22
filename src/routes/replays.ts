@@ -6,8 +6,8 @@ const router = require('express').Router();
 
 // Get a replay from the database (any client)
 router.get('/retrieve', verifyToken, async (req, res) => {
-    const replayID = req.body._id;
-    const playerID = req.body.playerID;
+    const replayID = req.query.replayID;
+    const playerID = req.query.playerID;
 
     console.log('rid: ' + replayID);
     console.log('pid: ' + playerID);

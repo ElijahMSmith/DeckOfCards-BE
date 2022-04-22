@@ -110,8 +110,15 @@ replaySchema.methods.containsPlayerID = function (
     try {
         for (let playerNoObj of replay.playerIDs) {
             for (let playerID of playerNoObj.allIDs) {
-                console.log("'" + playerID + "' vs '" + queryingID + "'");
-                if (playerID === queryingID) return true;
+                console.log(
+                    "'" +
+                        playerID.toString() +
+                        "' vs '" +
+                        queryingID.toString() +
+                        "'"
+                );
+                console.log(playerID.toString() === queryingID.toString());
+                if (playerID.toString() === queryingID.toString()) return true;
             }
         }
 
